@@ -2,7 +2,7 @@
 @import "tailwindcss-primeui";
 @import "./styles/table.css";
 @import "./styles/input.css";
-
+@import "./styles/buttons.css";
 
 @custom-variant dark (&:where(.dark, .dark *));
 /* @import 'styles/buttons.css'; */
