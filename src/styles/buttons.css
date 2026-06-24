@@ -1,0 +1,23 @@
+.ce-button-outlined {
+  @apply border-2 border-primary p-2;
+
+  @variant hover {
+    @apply bg-on-primary-hover
+  }
+
+  @variant active {
+    @apply bg-on-primary-active
+  }
+}
+
+.ce-button {
+  @apply border-primary text-on-primary bg-primary p-2 border-2;
+
+  @variant hover {
+    @apply bg-primary-hover border-primary-hover
+  }
+
+  @variant active {
+    @apply bg-primary-active border-primary-active
+  }
+}

@@ -1,0 +1,123 @@
+<div class="flex min-h-full flex-col gap-6">
+  <div class="space-y-2">
+    <h1 class="text-4xl font-bold uppercase">Registro</h1>
+    <p class="text-sm">Registro operativo continuo</p>
+  </div>
+
+  <app-register-form
+    [activeTab]="activeTab()"
+    [accounts]="financialAccounts()"
+    [assets]="allAssets()"
+    [isSavingLiquidity]="isSavingLiquidity()"
+    [isSavingTransaction]="isSavingTransaction()"
+    [liquidityResetToken]="liquidityResetToken()"
+    [assetResetToken]="assetResetToken()"
+    (activeTabChange)="setActiveTab($event)"
+    (saveLiquidity)="saveLiquiditySnapshot($event)"
+    (saveAssetTransaction)="saveAssetTransaction($event)"
+  />
+
+  <p-table
+    [value]="tableRows()"
+    class="ce-table flex-1 overflow-auto max-h-200"
+    [scrollable]="true"
+    scrollHeight="flex"
+    sortField="date"
+    [sortOrder]="-1"
+    [lazy]="true"
+  >
+    <ng-template pTemplate="header">
+      <tr class="uppercase text-xs">
+        <th class="p-4 text-left">Tipo</th>
+        <th class="p-4 text-left">Elemento</th>
+        @if (activeTab() == 'assets') {
+          <th class="hidden p-4 text-right md:table-cell">Quantità</th>
+          <th class="hidden p-4 text-right md:table-cell">Prezzo</th>
+        }
+        <th class="p-4 text-right">Totale</th>
+        <th class="p-4 text-right">Data</th>
+        <th class="p-4 text-right">Azioni</th>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="body" let-entry>
+      <tr class="border-b border-primary/20 text-sm">
+        <td class="p-4">
+          <span
+            class="font-bold uppercase"
+            [class.ce-container-positive]="entry.typeLabel == 'ACQUISTO'"
+            [class.ce-container-negative]="entry.typeLabel == 'VENDITA'"
+          >
+            {{ entry.typeLabel }}</span
+          >
+        </td>
+        <td class="p-4">{{ entry.elementLabel }}</td>
+        @if (activeTab() == 'assets') {
+          <td class="hidden p-4 text-right tabular-nums md:table-cell">
+            <!-- Mostra la quantita -->
+            @if (entry.quantity === null) {
+              <span>—</span>
+            } @else {
+              <span>{{ entry.quantity | number: '1.0-3' }}</span>
+            }
+          </td>
+          <td class="hidden p-4 text-right tabular-nums md:table-cell">
+            <!-- Mostra il prezzo -->
+            @if (entry.price === null) {
+              <span>—</span>
+            } @else {
+              <span>{{ entry.price | currency: entry.currency : 'symbol' : '1.2-2' }}</span>
+            }
+          </td>
+        }
+        <td class="p-4 text-right font-bold tabular-nums">
+          {{ entry.total | currency: entry.currency : 'symbol' : '1.2-2' }}
+        </td>
+        <td class="p-4 text-right whitespace-nowrap">{{ entry.date | date: 'dd/MM/yyyy' }}</td>
+        <td class="p-4 text-right">
+          <div class="flex items-center justify-end gap-3">
+            <button
+              pButton
+              type="button"
+              class="!p-0 !text-sm underline underline-offset-2"
+              severity="secondary"
+              variant="text"
+              (click)="openEntryDetails(entry)"
+            >
+              Apri
+            </button>
+            <button
+              pButton
+              type="button"
+              class="!p-0 !text-sm underline underline-offset-2"
+              severity="secondary"
+              variant="text"
+              [disabled]="!entry.canDelete"
+              (click)="deleteEntry(entry)"
+            >
+              {{ getEntryDeleteLabel(entry) }}
+            </button>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="paginatorleft">
+      <span class="text-sm">Totale movimenti: {{ tableRows().length }}</span>
+    </ng-template>
+
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="100%" class="pl-4 text-sm">
+          {{ isLoadingEntries() ? 'Caricamento transazioni...' : 'Nessuna registrazione trovata' }}
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>
+
+<app-register-entry-detail-dialog
+  [entry]="selectedEntry()"
+  (close)="closeEntryDetails()"
+  (delete)="deleteEntry($event)"
+/>

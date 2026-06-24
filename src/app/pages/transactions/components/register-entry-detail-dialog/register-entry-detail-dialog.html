@@ -1,0 +1,92 @@
+<p-dialog
+  [visible]="entry() !== null"
+  (visibleChange)="!$event && close.emit()"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [style]="{ width: 'min(94vw, 560px)' }"
+  styleClass="ce-container-outlined"
+>
+  <ng-template #header>
+    <div class="flex flex-col gap-1">
+      <span class="text-2xl font-bold uppercase">Dettaglio registrazione</span>
+      <span class="text-[11px] normal-case">Vista rapida della riga selezionata</span>
+    </div>
+  </ng-template>
+
+  <!-- Mostra i dettagli riga -->
+  @if (entry(); as currentEntry) {
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <div class="flex flex-col gap-1">
+        <span class="text-xs font-bold uppercase">Tipo</span>
+        <span class="text-sm">{{ currentEntry.typeLabel }}</span>
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <span class="text-xs font-bold uppercase">Data</span>
+        <span class="text-sm">{{ currentEntry.date | date: 'dd/MM/yyyy' }}</span>
+      </div>
+
+      <div class="flex flex-col gap-1 sm:col-span-2">
+        <span class="text-xs font-bold uppercase">Elemento</span>
+        <span class="text-sm">{{ currentEntry.elementLabel }}</span>
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <span class="text-xs font-bold uppercase">Quantità</span>
+        <span class="text-sm">
+          {{ currentEntry.quantity === null ? '—' : (currentEntry.quantity | number: '1.0-3') }}
+        </span>
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <span class="text-xs font-bold uppercase">Prezzo</span>
+        <span class="text-sm">
+          {{
+            currentEntry.price === null
+              ? '—'
+              : (currentEntry.price | currency: currentEntry.currency : 'symbol' : '1.2-2')
+          }}
+        </span>
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <span class="text-xs font-bold uppercase">Totale</span>
+        <span class="text-sm font-bold">
+          {{ currentEntry.total | currency: currentEntry.currency : 'symbol' : '1.2-2' }}
+        </span>
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <span class="text-xs font-bold uppercase">Eliminazione</span>
+        <span class="text-sm">
+          {{ currentEntry.canDelete ? 'Disponibile' : 'Non disponibile' }}
+        </span>
+      </div>
+    </div>
+  }
+
+  <ng-template #footer>
+    <div class="flex w-full flex-col gap-3 pt-3">
+      <!-- Mostra il tasto delete -->
+      @if (entry()?.canDelete) {
+        <button
+          pButton
+          type="button"
+          class="ce-button w-full justify-center font-bold uppercase"
+          (click)="delete.emit(entry()!)"
+        >
+          Elimina registrazione
+        </button>
+      }
+      <button
+        pButton
+        type="button"
+        class="ce-button-outlined w-full justify-center font-bold uppercase"
+        (click)="close.emit()"
+      >
+        Chiudi
+      </button>
+    </div>
+  </ng-template>
+</p-dialog>

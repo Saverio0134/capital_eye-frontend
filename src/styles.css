@@ -1,0 +1,102 @@
+@import "tailwindcss";
+@import "tailwindcss-primeui";
+@import "./styles/table.css";
+@import "./styles/input.css";
+
+
+@custom-variant dark (&:where(.dark, .dark *));
+/* @import 'styles/buttons.css'; */
+
+@theme {
+  /* Colori base */
+  --color-primary: light-dark(black, #E8E4D0);
+  --color-on-primary: light-dark(#E8E4D0, black);
+
+  --color-primary-hover: color-mix(in oklch, var(--color-primary) 90%, white);
+  --color-on-primary-hover: color-mix(in oklch, var(--color-on-primary) 90%, black);
+
+  --color-primary-active: color-mix(in oklch, var(--color-primary) 80%, white);
+  --color-on-primary-active: color-mix(in oklch, var(--color-on-primary) 80%, black);
+}
+
+@import "./styles/scroll-bar.css";
+
+@font-face {
+  font-family: "JetBrainsMono";
+  src: url("assets/webfonts/JetBrainsMono-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "JetBrainsMono";
+  src: url("assets/webfonts/JetBrainsMono-Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "JetBrainsMono";
+  src: url("assets/webfonts/JetBrainsMono-Italic.woff2") format("woff2");
+  font-weight: 400;
+  font-style: italic;
+}
+
+:root {
+  --p-primary-color: var(--color-primary);
+}
+
+html,
+body {
+  font-family: 'JetBrainsMono', Courier, monospace;
+  background-color: var(--color-on-primary);
+
+}
+
+.ce-toast-enter {
+  animation: ce-toast-enter 300ms ease-out both;
+}
+
+.ce-toast-leave {
+  animation: ce-toast-leave 200ms ease-in both;
+}
+
+@keyframes ce-toast-enter {
+  from {
+    opacity: 1;
+    transform: translateY(-10rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes ce-toast-leave {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(-10rem);
+  }
+}
+
+.ce-container-outlined {
+  @apply border-primary text-primary bg-on-primary border-2 p-4;
+}
+
+.ce-container-positive {
+  @apply !bg-green-900 !text-on-primary px-2 py-0.5
+}
+
+.ce-container-negative {
+  @apply !bg-red-900 !text-on-primary px-2 py-0.5
+}
+
+.p-overlay-mask {
+  z-index: 9000 !important;
+}

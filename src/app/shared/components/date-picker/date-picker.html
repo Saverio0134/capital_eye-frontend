@@ -1,0 +1,30 @@
+@if (isMobile()) {
+  <input
+    type="date"
+    class="ce-input p-inputtext min-h-11 w-full"
+    [id]="inputId()"
+    [value]="valueAsString()"
+    [min]="minDateAsString()"
+    [max]="maxDateAsString()"
+    [attr.disabled]="isDisabled() ? '' : null"
+    [class.p-invalid]="invalid()"
+    (change)="onNativeChange($event)"
+    (blur)="onTouchedFn()"
+  />
+} @else {
+  <p-datepicker
+    class="ce-input min-h-11 w-full"
+    [inputId]="inputId()"
+    dateFormat="dd/mm/yy"
+    [firstDayOfWeek]="1"
+    [minDate]="$any(minDate())"
+    [maxDate]="$any(maxDate())"
+    [showIcon]="true"
+    [fluid]="true"
+    [invalid]="invalid()"
+    [disabled]="isDisabled()"
+    [ngModel]="value()"
+    (ngModelChange)="onDesktopChange($event)"
+    (onBlur)="onTouchedFn()"
+  />
+}

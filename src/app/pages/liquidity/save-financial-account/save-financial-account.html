@@ -1,0 +1,108 @@
+<p-dialog
+  [visible]="visible()"
+  (visibleChange)="visibleChange.emit($event)"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [style]="{ width: 'min(94vw, 480px)' }"
+  styleClass="ce-container-outlined"
+>
+  <ng-template #header>
+    <div class="flex flex-col gap-1 uppercase">
+      <span class="text-2xl font-bold">
+        {{ isEditMode() ? 'MODIFICA BANCA' : 'NUOVA BANCA' }}
+      </span>
+      <span class="text-[11px] font-normal normal-case">
+        Conto, provider o wallet usato per liquidità e asset
+      </span>
+    </div>
+  </ng-template>
+
+  <form class="flex flex-col gap-5 pt-2" [formRoot]="financialAccountForm">
+    <div class="flex flex-col gap-2">
+      <label for="financial-account-name" class="text-xs font-bold uppercase">NOME</label>
+      <input
+        id="financial-account-name"
+        type="text"
+        pInputText
+        class="ce-input w-full"
+        [class.p-invalid]="invalidFinancialAccountField(financialAccountForm.name)"
+        placeholder="Es: Fineco, Hype, Revolut..."
+        [formField]="financialAccountForm.name"
+      />
+      <!-- Mostra gli errori nome -->
+      @if (financialAccountForm.name().touched()) {
+        @for (error of financialAccountForm.name().errors(); track error.kind) {
+          <div role="alert" class="text-xs font-semibold text-red-900">
+            {{ error.message }}
+          </div>
+        }
+      }
+    </div>
+
+    <div class="flex flex-col gap-2">
+      <label for="financial-account-type" class="text-xs font-bold uppercase">TIPO</label>
+      <p-select
+        inputId="financial-account-type"
+        [options]="accountTypeOptions"
+        optionLabel="label"
+        optionValue="value"
+        class="ce-input w-full flex items-center justify-between"
+        [class.p-invalid]="invalidFinancialAccountField(financialAccountForm.type)"
+        [formField]="$any(financialAccountForm.type)"
+        appendTo="body"
+      />
+      <!-- Mostra gli errori tipo -->
+      @if (financialAccountForm.type().touched()) {
+        @for (error of financialAccountForm.type().errors(); track error.kind) {
+          <div role="alert" class="text-xs font-semibold text-red-900">
+            {{ error.message }}
+          </div>
+        }
+      }
+    </div>
+
+    <div class="flex flex-col gap-2">
+      <label for="financial-account-currency" class="text-xs font-bold uppercase">VALUTA</label>
+      <p-select
+        inputId="financial-account-currency"
+        [options]="currencyOptions"
+        optionLabel="label"
+        optionValue="value"
+        class="ce-input w-full flex items-center justify-between"
+        [class.p-invalid]="invalidFinancialAccountField(financialAccountForm.currency)"
+        [formField]="$any(financialAccountForm.currency)"
+        appendTo="body"
+      />
+      <!-- Mostra gli errori valuta -->
+      @if (financialAccountForm.currency().touched()) {
+        @for (error of financialAccountForm.currency().errors(); track error.kind) {
+          <div role="alert" class="text-xs font-semibold text-red-900">
+            {{ error.message }}
+          </div>
+        }
+      }
+    </div>
+
+    <div class="flex flex-col gap-3 pt-4">
+      <button
+        pButton
+        type="submit"
+        class="ce-button w-full justify-center font-bold uppercase"
+        [disabled]="!canSaveFinancialAccount()"
+        [loading]="isSavingFinancialAccount()"
+      >
+        {{ isEditMode() ? 'AGGIORNA BANCA' : 'SALVA BANCA' }}
+      </button>
+      <button
+        pButton
+        type="button"
+        class="ce-button-outlined w-full justify-center font-bold uppercase"
+        [disabled]="isSavingFinancialAccount()"
+        (click)="closeDialog()"
+      >
+        ANNULLA
+      </button>
+    </div>
+  </form>
+</p-dialog>

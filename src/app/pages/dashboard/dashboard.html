@@ -1,0 +1,105 @@
+<div class="space-y-4 flex min-h-full flex-col xl:[@media_(min-height:820px)]:h-full">
+  <!-- TOTALE PATRIMONIO -->
+  <div class="border-3 border-primary p-4 flex flex-col gap-2">
+    <div class="flex justify-between items-center flex-wrap gap-x-2 gap-y-1">
+      <span class="text-xl">TOTALE PATRIMONIO NETTO</span>
+      @if (lastUpdate()) {
+        <span class="md:text-sm text-xs"
+          >Ultimo aggiornamento il {{ lastUpdate() | date: 'dd/MM/yyyy HH:mm' }}</span
+        >
+      }
+    </div>
+    <div class="flex flex-wrap gap-x-2 gap-y-1">
+      <span class="md:text-6xl text-5xl font-bold">{{
+        totalWealth() | currency: 'EUR' : 'symbol' : '1.2-2'
+      }}</span>
+      <div class="flex flex-col justify-end">
+        <div
+          class="flex md:block gap-1 items-end md:space-x-1.5"
+          [class.text-green-900]="growthNetWorth() > 0"
+          [class.text-red-900]="growthNetWorth() < 0"
+        >
+          <span class="md:text-xl">
+            @if (growthNetWorth() >= 0.01) {
+              ▲
+            } @else if (growthNetWorth() < 0) {
+              ▼
+            } @else {
+              =
+            }
+          </span>
+          <span class="md:text-xl">{{ growthNetWorth() | number: '1.2-2' }}%</span>
+          <div class="text-xs md:text-sm text-primary mb-0.5">vs mese precedente</div>
+        </div>
+        <!-- <div class="text-xs md:text-sm mb-1">vs mese precendente</div> -->
+      </div>
+    </div>
+  </div>
+
+  <!-- 3 BOX RIASSUNTIVI -->
+  <div class="flex gap-3 flex-col lg:flex-row">
+    <app-summary-card
+      class="flex-1"
+      label="LIQUIDITÀ"
+      [value]="liquidity()"
+      [lastUpdate]="liquidityStore.totalLatestLiquidity()?.lastUpdate"
+      [growth]="growthLiquidity()"
+      [isLoading]="isGlobalLoading()"
+      [randomNumber]="randomNumber()"
+    />
+
+    <app-summary-card
+      class="flex-1"
+      label="ASSETS FINANZIARI netto"
+      [value]="intangibleAssets()"
+      [lastUpdate]="assetStore.intangibleAssets()?.lastUpdate"
+      [growth]="growthIntangible()"
+      [isLoading]="isGlobalLoading()"
+      [randomNumber]="randomNumber()"
+    />
+
+    <app-summary-card
+      class="flex-1"
+      label="ASSETS FISICI netto"
+      [value]="physicalAssets()"
+      [lastUpdate]="assetStore.physicalAssets()?.lastUpdate"
+      [growth]="growthPhysical()"
+      [isLoading]="isGlobalLoading()"
+      [randomNumber]="randomNumber()"
+    />
+  </div>
+
+  <!-- GRAFICI  -->
+  <div class="flex gap-3 flex-col lg:flex-row flex-1 items-stretch min-h-80">
+    <!-- PIE CHART -->
+    <div
+      class="ce-container-outlined flex flex-col gap-4 lg:min-w-120 min-h-0 min-w-0 max-h-[400px] lg:max-h-full"
+    >
+      <span>DISTRIBUZIONE</span>
+      <div class="flex-1 min-h-0 relative overflow-hidden">
+        @defer (when !isGlobalLoading()) {
+          <app-distribution-chart
+            class="block h-full w-full"
+            [labels]="distributionLabels()"
+            [values]="distributionValues()"
+          />
+        } @placeholder {
+          <div>Loading...</div>
+        }
+      </div>
+    </div>
+
+    <!-- LINE CHART -->
+    <div class="ce-container-outlined flex flex-col gap-4 flex-1 min-h-0 min-w-0">
+      <span>ANDAMENTO MENSILE PATRIMONIO NETTO</span>
+      <div class="flex-1 relative overflow-hidden">
+        <!-- Mostra il grafico solo quando la resource non sta ancora caricando. -->
+        @if (!isGlobalLoading()) {
+          <app-trend-chart class="block w-full h-full" [monthlyNetWort]="monthlyNetWorth()" />
+        } @else {
+          <div>Loading...</div>
+        }
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,61 @@
+<div class="w-full min-w-0 space-y-4">
+  <form class="w-full min-w-0 space-y-4" [formRoot]="loginForm">
+    <h2 class="w-full text-center text-xl font-bold">LOGIN</h2>
+    <div class="flex min-w-0 flex-col gap-1">
+      <label for="login-email" class="text-sm">Email</label>
+      <input
+        id="login-email"
+        class="ce-input w-full min-w-0"
+        type="email"
+        pInputText
+        [class.p-invalid]="invalidField(loginForm.email)"
+        [formField]="loginForm.email"
+      />
+      @if (loginForm.email().touched()) {
+        @for (error of loginForm.email().errors(); track error.kind) {
+          <div role="alert" class="text-xs font-semibold text-red-900">
+            {{ error.message }}
+          </div>
+        }
+      }
+    </div>
+    <div class="flex min-w-0 flex-col">
+      <label for="login-password" class="text-sm">Password</label>
+      <p-password
+        inputId="login-password"
+        styleClass="w-full min-w-0 block"
+        inputStyleClass="ce-input w-full"
+        [feedback]="false"
+        [class.p-invalid]="invalidField(loginForm.password)"
+        [formField]="$any(loginForm.password)"
+      />
+      @if (loginForm.password().touched()) {
+        @for (error of loginForm.password().errors(); track error.kind) {
+          <div role="alert" class="text-xs font-semibold text-red-900">
+            {{ error.message }}
+          </div>
+        }
+      }
+    </div>
+    <div class="space-y-1">
+      <button
+        class="ce-button inline-flex w-full min-w-0 items-center justify-center"
+        pButton
+        type="submit"
+        [loading]="loginForm().submitting()"
+      >
+        Esegui Login
+      </button>
+      <button pButton type="button" class="text-sm underline p-0">Recupera Password</button>
+    </div>
+
+    <div class="text-center">- o -</div>
+    <app-external-providers />
+  </form>
+  <hr />
+  <div class="flex justify-center gap-8">
+    <button pButton class="underline" [routerLink]="['/registration']">
+      SEI NUOVO? REGISTRATI ORA
+    </button>
+  </div>
+</div>

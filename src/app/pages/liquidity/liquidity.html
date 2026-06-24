@@ -1,0 +1,165 @@
+<div class="space-y-6 flex flex-col min-h-full xl:[@media_(min-height:820px)]:h-full">
+  <div class="border-3 border-primary p-4 flex flex-col gap-2">
+    <div class="flex justify-between items-center flex-wrap gap-x-2 gap-y-1">
+      <span class="text-xl uppercase">LIQUIDITÀ TOTALE</span>
+      @if (liquiditySummary()?.lastUpdate) {
+        <span class="md:text-sm text-xs"
+          >Ultimo aggiornamento il
+          {{ liquiditySummary()?.lastUpdate | date: 'dd/MM/yyyy HH:mm' }}</span
+        >
+      }
+    </div>
+    <div class="flex flex-wrap gap-x-2 gap-y-1">
+      <span class="md:text-6xl text-5xl font-bold">{{
+        totalLiquidity() | currency: 'EUR' : 'symbol' : '1.2-2'
+      }}</span>
+    </div>
+  </div>
+  <!-- CARD BANCHE -->
+  <div class="flex items-end justify-between gap-3 flex-wrap">
+    <span class="text-sm font-bold uppercase">BANK CARDS</span>
+    <button
+      pButton
+      class="ce-button flex items-center gap-2 px-4 py-2 font-bold uppercase"
+      (click)="onCreateBank()"
+    >
+      <lucide-icon [img]="PlusIcon" [size]="18" />
+      NUOVA BANCA
+    </button>
+  </div>
+  @if (banks().length > 0) {
+    <div class="flex flex-col gap-3">
+      <p-carousel
+        [value]="banks()"
+        [numVisible]="3"
+        [numScroll]="1"
+        [circular]="false"
+        [responsiveOptions]="bankCarouselResponsiveOptions"
+        [showIndicators]="false"
+        [showNavigators]="true"
+      >
+        <ng-template #previousicon>
+          <div
+            class="p-1 px-1.5 border-2 border-primary font-bold hover:bg-primary hover:text-on-primary transition"
+          >
+            <<
+          </div>
+        </ng-template>
+        <ng-template #nexticon>
+          <div
+            class="p-1 px-1.5 border-2 border-primary font-bold hover:bg-primary hover:text-on-primary transition"
+          >
+            >>
+          </div>
+        </ng-template>
+        <ng-template pTemplate="item" let-bank>
+          <div class="ce-container-outlined flex flex-col gap-2 min-w-0 h-full mx-2">
+            <div class="flex items-start justify-between gap-2">
+              <span class="text-lg font-bold uppercase min-w-0 truncate">{{ bank.name }}</span>
+              <button
+                pButton
+                type="button"
+                class="ce-button-outlined !p-1 inline-flex items-center justify-center"
+                [attr.aria-label]="'Modifica ' + bank.name"
+                (click)="onEditBank(bank.financialAccount)"
+              >
+                <lucide-icon [img]="PencilIcon" [size]="16" />
+              </button>
+            </div>
+            <span class="text-3xl font-bold">{{
+              bank.currentBalance | currency: 'EUR' : 'symbol' : '1.2-2'
+            }}</span>
+            <div class="flex items-center gap-2">
+              <span class="border border-primary px-2 py-0.5 text-[10px] uppercase">DELTA</span>
+              <span
+                class="text-sm font-bold"
+                [class.text-green-900]="bank.delta > 0"
+                [class.text-red-900]="bank.delta < 0"
+              >
+                {{ bank.delta >= 0 ? '+' : '' }}{{ bank.delta | number: '1.0-0' }}
+              </span>
+            </div>
+          </div>
+        </ng-template>
+      </p-carousel>
+    </div>
+  } @else if (isTableLoading()) {
+    <span class="text-sm">Caricamento banche...</span>
+  }
+  <app-save-financial-account
+    [visible]="isSaveFinancialAccountDialogOpen()"
+    [financialAccount]="selectedFinancialAccount()"
+    (visibleChange)="isSaveFinancialAccountDialogOpen.set($event)"
+    (financialAccountSaved)="onFinancialAccountSaved()"
+  />
+
+  <!-- TABELLA STORICO -->
+  <div class="space-y-3">
+    <div class="flex items-end justify-between gap-3 flex-wrap">
+      <span class="text-sm font-bold uppercase">MATRICE STORICA</span>
+    </div>
+
+    <p-table
+      [value]="history()"
+      class="ce-table"
+      [scrollable]="true"
+      [scrollHeight]="'275px'"
+      [lazy]="true"
+      showGridlines
+    >
+      <ng-template pTemplate="header">
+        <tr class="uppercase text-xs">
+          <th class="p-4 text-left" pFrozenColumn>MESE</th>
+          @for (bank of banks(); track bank.key) {
+            <th class="p-4 text-right w-48 truncate">{{ bank.name }}</th>
+          }
+          <th class="p-4 text-right" pFrozenColumn>DELTA TOTALE</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-row>
+        <tr class="border-b border-primary/20 text-sm">
+          <td class="p-4 font-bold uppercase" pFrozenColumn>{{ row.mese }}</td>
+          @for (bank of banks(); track bank.key) {
+            <td class="p-4 text-right tabular-nums">
+              {{ row.values[bank.key] | currency: 'EUR' : 'symbol' : '1.0-0' }}
+            </td>
+          }
+          <td class="p-4 text-right font-bold tabular-nums" pFrozenColumn>
+            <span
+              class="inline-flex items-center bg-primary text-on-primary px-2 py-0.5"
+              [class.ce-container-positive]="row.delta > 0"
+              [class.ce-container-negative]="row.delta < 0"
+            >
+              {{ row.delta > 0 ? '+' : '' }}{{ row.delta | number: '1.0-0' }}
+            </span>
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template #emptymessage>
+        <tr>
+          <td colspan="3" class="pl-4 text-sm">
+            {{ isTableLoading() ? 'Caricamento storico...' : 'Nessun storico trovato' }}
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+  <!-- BAR CHART -->
+  <div
+    class="ce-container-outlined flex gap-3 flex-col flex-1 items-stretch min-h-80 max-h-100 md:flex-1"
+  >
+    <span class="font-bold uppercase text-sm">COMPOSIZIONE LIQUIDITÀ NEL TEMPO</span>
+    <div class="relative h-80 md:flex-1 md:min-h-0 overflow-hidden">
+      @if (!isTableLoading()) {
+        <app-bar-chart
+          class="block h-full w-full"
+          [labels]="chartLabels()"
+          [series]="chartSeries()"
+        />
+      } @else {
+        <div>Loading...</div>
+      }
+    </div>
+  </div>
+</div>

@@ -1,0 +1,186 @@
+<p-dialog
+  [visible]="visible()"
+  (visibleChange)="visibleChange.emit($event)"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [style]="{ width: 'min(94vw, 720px)' }"
+  styleClass="ce-container-outlined"
+>
+  <ng-template #header>
+    <div class="flex flex-col gap-1 uppercase">
+      <span class="text-2xl font-bold">{{ dialogTitle() }}</span>
+      <span class="text-[11px] font-normal normal-case">{{ dialogSubtitle() }}</span>
+    </div>
+  </ng-template>
+
+  <form id="save-asset-form" class="flex flex-col gap-5 pt-2" [formRoot]="createAssetForm">
+    <!-- Avvisa se mancano conti -->
+    @if (!isEditMode() && accountOptions().length === 0) {
+      <div class="border-2 border-primary p-3 text-sm">
+        Nessun financial account disponibile. Puoi creare solo asset standalone e collegarli in un
+        secondo momento.
+      </div>
+    }
+
+    <!-- Mostra le modalita -->
+    @if (showCreationFlowSelector()) {
+      <div class="flex flex-col gap-2">
+        <span class="text-xs font-bold uppercase">MODALITÀ CREAZIONE</span>
+        <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
+          <button
+            pButton
+            type="button"
+            class="min-h-14 justify-start px-4 text-left"
+            [class.ce-button]="creationFlow() === 'linked'"
+            [class.ce-button-outlined]="creationFlow() !== 'linked'"
+            [disabled]="!canCreateLinkedAsset()"
+            (click)="setCreationFlow('linked')"
+          >
+            <span class="flex flex-col items-start">
+              <span class="font-bold uppercase">Asset collegato a un conto</span>
+              <span class="text-xs normal-case">
+                Crea l'asset e la prima posizione sul conto selezionato.
+              </span>
+            </span>
+          </button>
+
+          <button
+            pButton
+            type="button"
+            class="min-h-14 justify-start px-4 text-left"
+            [class.ce-button]="creationFlow() === 'standalone'"
+            [class.ce-button-outlined]="creationFlow() !== 'standalone'"
+            (click)="setCreationFlow('standalone')"
+          >
+            <span class="flex flex-col items-start">
+              <span class="font-bold uppercase">Asset standalone</span>
+              <span class="text-xs normal-case">
+                Crea solo lo strumento globale, senza posizioni iniziali.
+              </span>
+            </span>
+          </button>
+        </div>
+      </div>
+    }
+
+    <!-- Mostra il selettore conto -->
+    @if (showAccountSelector()) {
+      <div class="flex flex-col gap-2">
+        <label for="asset-account" class="text-xs font-bold uppercase">CONTO INIZIALE</label>
+        <p-select
+          inputId="asset-account"
+          [options]="accountOptions()"
+          optionLabel="label"
+          optionValue="value"
+          class="ce-input w-full flex items-center justify-between"
+          [class.p-invalid]="invalidCreateAssetField(createAssetForm.accountUuid)"
+          [formField]="$any(createAssetForm.accountUuid)"
+          appendTo="body"
+        />
+      </div>
+    } @else if (isStandaloneCreationFlow()) {
+      <div class="border-2 border-primary p-3 text-sm">
+        Asset standalone: nessun conto collegato in creazione, quantit&#224; iniziale e PMC sono
+        forzati a zero.
+      </div>
+    } @else if (isEditMode()) {
+      <div class="border-2 border-primary p-3 text-sm">
+        Le posizioni per conto non si modificano da questa schermata. Usa la sezione posizioni
+        dell'asset per collegare nuovi account.
+      </div>
+    }
+
+    <div class="grid grid-cols-1 gap-5 md:grid-cols-[2fr_1fr_1fr]">
+      <div class="flex flex-col gap-2">
+        <label for="asset-name" class="text-xs font-bold uppercase">NOME ASSET</label>
+        <input
+          id="asset-name"
+          pInputText
+          type="text"
+          class="ce-input w-full"
+          [class.p-invalid]="invalidCreateAssetField(createAssetForm.name)"
+          placeholder="Es: VWCE, Bitcoin, Rolex..."
+          [formField]="createAssetForm.name"
+        />
+        <!-- Mostra gli errori nome -->
+        @if (createAssetForm.name().touched()) {
+          @for (error of createAssetForm.name().errors(); track error.kind) {
+            <div role="alert" class="text-xs font-semibold text-red-900">
+              {{ error.message }}
+            </div>
+          }
+        }
+      </div>
+
+      <div class="flex flex-col gap-2">
+        <label for="asset-type" class="text-xs font-bold uppercase">TIPO</label>
+        <p-select
+          inputId="asset-type"
+          [options]="createAssetTypeOptions()"
+          optionLabel="label"
+          optionValue="value"
+          class="ce-input w-full flex items-center justify-between"
+          [class.p-invalid]="invalidCreateAssetField(createAssetForm.type)"
+          [formField]="$any(createAssetForm.type)"
+          appendTo="body"
+        />
+      </div>
+
+      <div class="flex flex-col gap-2">
+        <label for="asset-currency" class="text-xs font-bold uppercase">VALUTA BASE</label>
+        <p-select
+          inputId="asset-currency"
+          [options]="currencyOptions"
+          optionLabel="label"
+          optionValue="value"
+          class="ce-input w-full flex items-center justify-between"
+          [class.p-invalid]="invalidCreateAssetField(createAssetForm.baseCurrency)"
+          [formField]="$any(createAssetForm.baseCurrency)"
+          appendTo="body"
+        />
+      </div>
+    </div>
+
+    <!-- Sceglie il form asset -->
+    @if (isPhysicalMode()) {
+      <app-save-asset-physical-form
+        [form]="createAssetForm"
+        [showInitialPositionFields]="showInitialPositionFields()"
+        [config]="physicalFormConfig()"
+        [metalTypeOptions]="metalTypeOptions"
+        (preciousMetalPriceModeChange)="setPreciousMetalPriceMode($event)"
+        (preciousMetalQuantityModeChange)="setPreciousMetalQuantityMode($event)"
+      />
+    } @else {
+      <app-save-asset-financial-form
+        [form]="createAssetForm"
+        [showInitialPositionFields]="showInitialPositionFields()"
+      />
+    }
+  </form>
+
+  <ng-template #footer>
+    <div class="flex w-full flex-col gap-3 pt-3">
+      <button
+        pButton
+        type="submit"
+        form="save-asset-form"
+        class="ce-button w-full justify-center font-bold uppercase"
+        [disabled]="!canCreateAsset()"
+        [loading]="createAssetForm().submitting() || isSavingAsset()"
+      >
+        {{ saveButtonLabel() }}
+      </button>
+      <button
+        pButton
+        type="button"
+        class="ce-button-outlined w-full justify-center font-bold uppercase"
+        [disabled]="isSavingAsset()"
+        (click)="closeCreateDialog()"
+      >
+        ANNULLA
+      </button>
+    </div>
+  </ng-template>
+</p-dialog>

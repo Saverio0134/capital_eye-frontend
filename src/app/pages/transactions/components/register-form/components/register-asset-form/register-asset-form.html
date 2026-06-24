@@ -1,0 +1,165 @@
+<div class="ce-container-outlined">
+  <form class="grid grid-cols-1 gap-x-4 lg:grid-cols-12" [formRoot]="assetForm()">
+    <div class="flex flex-col gap-2 lg:col-span-3">
+      <label for="register-asset-asset" class="text-xs font-bold uppercase">Asset</label>
+      <p-select
+        inputId="register-asset-asset"
+        [options]="assetOptions()"
+        optionLabel="label"
+        optionValue="value"
+        appendTo="body"
+        class="ce-input flex min-h-11 w-full items-center"
+        [class.p-invalid]="invalidRegisterField()(assetForm().assetUuid)"
+        [formField]="$any(assetForm().assetUuid)"
+      />
+      <div class="min-h-5">
+        @if (assetForm().assetUuid().touched()) {
+          @for (error of assetForm().assetUuid().errors(); track error.kind) {
+            <div role="alert" class="text-xs font-semibold text-red-900">
+              {{ error.message }}
+            </div>
+          }
+        }
+      </div>
+    </div>
+
+    <div class="flex flex-col gap-2 lg:col-span-3">
+      <label for="register-asset-account" class="text-xs font-bold uppercase">
+        Conto collegato
+      </label>
+      <p-select
+        inputId="register-asset-account"
+        [options]="accountOptions()"
+        optionLabel="label"
+        optionValue="value"
+        appendTo="body"
+        class="ce-input flex min-h-11 w-full items-center"
+        [class.p-invalid]="invalidRegisterField()(assetForm().accountUuid)"
+        [formField]="$any(assetForm().accountUuid)"
+      />
+      <div class="min-h-5">
+        @if (assetForm().accountUuid().touched()) {
+          @for (error of assetForm().accountUuid().errors(); track error.kind) {
+            <div role="alert" class="text-xs font-semibold text-red-900">
+              {{ error.message }}
+            </div>
+          }
+        }
+      </div>
+    </div>
+
+    <div class="flex flex-col gap-2 lg:col-span-6">
+      <span class="text-xs font-bold uppercase">Tipo operazione</span>
+      <div class="flex">
+        <button
+          pButton
+          type="button"
+          class="min-h-11 flex-1 justify-center font-bold p-2 uppercase border-2 border-green-900"
+          [ngClass]="
+            assetForm().type().value() === 'BUY'
+              ? 'bg-green-900 text-on-primary'
+              : 'ce-button-outlined'
+          "
+          ]
+          (click)="transactionTypeChange.emit('BUY')"
+        >
+          Acquisto
+        </button>
+        <button
+          pButton
+          type="button"
+          class="min-h-11 flex-1 justify-center p-2 font-bold uppercase border-2 border-red-900"
+          [ngClass]="
+            assetForm().type().value() === 'SELL'
+              ? 'bg-red-900 text-on-primary'
+              : 'ce-button-outlined '
+          "
+          (click)="transactionTypeChange.emit('SELL')"
+        >
+          Vendita
+        </button>
+      </div>
+    </div>
+
+    <div class="flex flex-col gap-2 lg:col-span-3">
+      <label for="register-asset-date" class="text-xs font-bold uppercase">Data</label>
+      <app-date-picker
+        inputId="register-asset-date"
+        [minDate]="minDate()"
+        [maxDate]="maxDate()"
+        [invalid]="invalidRegisterField()(assetForm().date)"
+        [formField]="$any(assetForm().date)"
+      />
+      <div class="min-h-5">
+        @if (assetForm().date().touched()) {
+          @for (error of assetForm().date().errors(); track error.kind) {
+            <div role="alert" class="text-xs font-semibold text-red-900">
+              {{ error.message }}
+            </div>
+          }
+        }
+      </div>
+    </div>
+
+    <div class="flex flex-col gap-2 lg:col-span-3">
+      <label for="register-asset-quantity" class="text-xs font-bold uppercase">Quantità</label>
+      <p-inputnumber
+        inputId="register-asset-quantity"
+        [minFractionDigits]="0"
+        [maxFractionDigits]="8"
+        class="w-full"
+        [class.p-invalid]="invalidRegisterField()(assetForm().quantity)"
+        inputStyleClass="ce-input min-h-11 w-full"
+        [formField]="$any(assetForm().quantity)"
+      />
+      <div class="min-h-5">
+        @if (assetForm().quantity().touched()) {
+          @for (error of assetForm().quantity().errors(); track error.kind) {
+            <div role="alert" class="text-xs font-semibold text-red-900">
+              {{ error.message }}
+            </div>
+          }
+        }
+      </div>
+    </div>
+
+    <div class="flex flex-col gap-2 lg:col-span-4">
+      <label for="register-asset-total" class="text-xs font-bold uppercase">
+        Totale operazione
+      </label>
+      <p-inputnumber
+        inputId="register-asset-total"
+        mode="currency"
+        [currency]="selectedCurrency()"
+        locale="it-IT"
+        [minFractionDigits]="2"
+        [maxFractionDigits]="2"
+        class="w-full"
+        [class.p-invalid]="invalidRegisterField()(assetForm().totalAmount)"
+        inputStyleClass="ce-input min-h-11 w-full"
+        [formField]="$any(assetForm().totalAmount)"
+      />
+      <div class="min-h-5">
+        @if (assetForm().totalAmount().touched()) {
+          @for (error of assetForm().totalAmount().errors(); track error.kind) {
+            <div role="alert" class="text-xs font-semibold text-red-900">
+              {{ error.message }}
+            </div>
+          }
+        }
+      </div>
+    </div>
+    <div class="flex flex-col gap-2 lg:col-span-2">
+      <span class="text-xs font-bold uppercase text-on-primary">-</span>
+      <button
+        pButton
+        type="submit"
+        class="ce-button min-h-11 w-full px-6 font-bold uppercase"
+        [disabled]="!canSave()"
+        [loading]="isSaving()"
+      >
+        Registra operazione
+      </button>
+    </div>
+  </form>
+</div>

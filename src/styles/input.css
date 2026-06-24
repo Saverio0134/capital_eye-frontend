@@ -1,0 +1,84 @@
+/* Select / Dropdown */
+.p-select {
+  border-radius: 0 !important;
+  padding: 0 !important;
+}
+
+.ce-input.p-inputtext:enabled:focus,
+.p-select.ce-input.p-focus,
+.p-inputnumber.p-inputwrapper-focus .ce-input {
+  outline-offset: -3px !important;
+}
+
+.p-select-label {
+  padding: 0.5rem !important;
+  font-weight: 600 !important;
+}
+
+.p-select-list {
+  @apply p-2 bg-on-primary-hover text-primary-active
+}
+
+.p-select-option {
+  @apply p-1
+}
+
+.p-select-option:hover:not(.p-select-option-selected) {
+  @apply bg-on-primary-active
+}
+
+.p-select-option.p-focus:not(.p-select-option-selected) {
+  @apply bg-on-primary-active
+}
+
+.p-select-option-selected {
+  @apply bg-primary text-on-primary
+}
+
+/* DATAPICKER */
+.p-datepicker>input:focus {
+  border: none !important;
+  outline: none;
+  box-shadow: none;
+}
+
+.p-datepicker-calendar-container {
+  @apply bg-on-primary-hover text-primary-active
+}
+
+.p-datepicker-header {
+  @apply bg-on-primary-hover text-primary-active
+}
+
+.p-datepicker-today>.p-datepicker-day {
+  @apply bg-on-primary text-primary
+}
+
+.p-datepicker-day:hover {
+  @apply bg-on-primary text-primary
+}
+
+.p-motion {
+  margin-top: 1rem;
+}
+
+.p-datepicker-year-view {
+  @apply bg-on-primary-hover text-primary-active
+}
+
+.p-datepicker-month-view {
+  @apply bg-on-primary-hover text-primary-active
+}
+
+.p-datepicker-month:hover {
+  @apply bg-on-primary text-primary
+}
+
+.p-datepicker-year:hover {
+  @apply bg-on-primary text-primary
+}
+
+.ce-input {
+  @apply border-primary text-primary bg-on-primary border-2 p-2;
+
+}

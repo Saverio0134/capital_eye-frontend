@@ -1,0 +1,58 @@
+<div class="w-full min-w-0 space-y-4">
+  <form class="w-full min-w-0 space-y-4" [formRoot]="registrationForm">
+    <h2 class="w-full text-center text-xl font-bold">REGISTRAZIONE</h2>
+    <div class="flex min-w-0 flex-col gap-1">
+      <label for="registration-email" class="text-sm">Email</label>
+      <input
+        id="registration-email"
+        class="ce-input w-full min-w-0"
+        type="email"
+        pInputText
+        [class.p-invalid]="invalidField(registrationForm.email)"
+        [formField]="registrationForm.email"
+      />
+      @if (registrationForm.email().touched()) {
+        @for (error of registrationForm.email().errors(); track error.kind) {
+          <div role="alert" class="text-xs font-semibold text-red-900">
+            {{ error.message }}
+          </div>
+        }
+      }
+    </div>
+    <div class="flex min-w-0 flex-col">
+      <label for="registration-password" class="text-sm">Password</label>
+      <p-password
+        inputId="registration-password"
+        styleClass="w-full min-w-0 block"
+        inputStyleClass="ce-input w-full"
+        [feedback]="false"
+        [class.p-invalid]="invalidField(registrationForm.password)"
+        [formField]="$any(registrationForm.password)"
+      />
+      @if (registrationForm.password().touched()) {
+        @for (error of registrationForm.password().errors(); track error.kind) {
+          <div role="alert" class="text-xs font-semibold text-red-900">
+            {{ error.message }}
+          </div>
+        }
+      }
+    </div>
+    <div class="space-y-1">
+      <button
+        class="ce-button inline-flex w-full min-w-0 items-center justify-center"
+        pButton
+        type="submit"
+        [loading]="registrationForm().submitting()"
+      >
+        Registrati
+      </button>
+    </div>
+
+    <div class="text-center">- o -</div>
+    <app-external-providers />
+  </form>
+  <hr />
+  <div class="flex justify-center gap-8">
+    <button pButton class="underline" [routerLink]="['/login']">HAI GIÀ UN ACCOUNT? LOGGATI</button>
+  </div>
+</div>

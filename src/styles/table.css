@@ -1,0 +1,55 @@
+.ce-table {
+  background: transparent;
+  border: 2px solid var(--color-primary)
+}
+
+.ce-table .p-datatable-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.ce-table .p-datatable-thead>tr>th {
+  background-color: var(--color-primary) !important;
+  color: var(--color-on-primary) !important;
+  border: none !important;
+  padding: 0.875rem 1rem !important;
+  font-weight: 700 !important;
+}
+
+.ce-table .p-datatable-tbody>tr>td {
+  background-color: var(--color-on-primary) !important;
+  color: var(--color-primary) !important;
+  border-bottom: 1px solid color-mix(in oklch, var(--color-primary) 12%, transparent) !important;
+  padding: 0.875rem 1rem !important;
+}
+
+.ce-table .p-datatable-tbody>tr:hover>td {
+  background-color: color-mix(in oklch, var(--color-primary) 4%, var(--color-on-primary)) !important;
+}
+
+/* Paginatore */
+.ce-table .p-paginator {
+  background: transparent !important;
+  border: none !important;
+  justify-content: flex-end !important;
+  padding: 0.5rem !important;
+}
+
+.ce-table .p-paginator-page,
+.ce-table .p-paginator-next,
+.ce-table .p-paginator-last,
+.ce-table .p-paginator-first,
+.ce-table .p-paginator-prev {
+  border-radius: 0 !important;
+  border: 2px solid var(--color-primary) !important;
+  color: var(--color-primary) !important;
+  margin: 0 !important;
+  height: 2.5rem !important;
+  min-width: 2.5rem !important;
+  font-weight: 700 !important;
+}
+
+.ce-table .p-paginator-page.p-highlight {
+  background: var(--color-primary) !important;
+  color: var(--color-on-primary) !important;
+}

@@ -1,0 +1,46 @@
+<div class="space-y-6">
+  <div class="flex w-full md:max-w-[420px] gap-0">
+    <button
+      type="button"
+      class="min-h-11 flex-1 justify-center font-bold uppercase"
+      [class.ce-button]="activeTab() === 'liquidity'"
+      [class.ce-button-outlined]="activeTab() !== 'liquidity'"
+      (click)="setActiveTab('liquidity')"
+    >
+      Liquidità
+    </button>
+    <button
+      type="button"
+      class="min-h-11 flex-1 justify-center font-bold uppercase"
+      [class.ce-button]="activeTab() === 'assets'"
+      [class.ce-button-outlined]="activeTab() !== 'assets'"
+      (click)="setActiveTab('assets')"
+    >
+      Assets
+    </button>
+  </div>
+
+  @if (activeTab() === 'liquidity') {
+    <app-register-liquidity-form
+      [liquidityForm]="liquidityForm"
+      [accountOptions]="accountOptions()"
+      [selectedCurrency]="selectedLiquidityCurrency()"
+      [canSave]="canSaveLiquidity()"
+      [isSaving]="isSavingLiquidity()"
+      [invalidRegisterField]="invalidRegisterField"
+    />
+  } @else {
+    <app-register-asset-form
+      [assetForm]="assetForm"
+      [accountOptions]="assetAccountOptions()"
+      [assetOptions]="assetOptions()"
+      [selectedCurrency]="selectedAssetCurrency()"
+      [canSave]="canSaveAssetTransaction()"
+      [isSaving]="isSavingTransaction()"
+      [invalidRegisterField]="invalidRegisterField"
+      [minDate]="minDate"
+      [maxDate]="maxDate"
+      (transactionTypeChange)="setTransactionType($event)"
+    />
+  }
+</div>

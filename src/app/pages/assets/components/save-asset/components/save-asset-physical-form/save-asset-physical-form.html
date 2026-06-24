@@ -1,0 +1,222 @@
+<div class="space-y-5">
+  <!-- Mostra i campi specifici del metallo prezioso -->
+  @if (config().showMetalFields) {
+    <div class="space-y-5 border-2 border-primary p-4">
+      <div class="flex flex-col gap-1">
+        <span class="text-xs font-bold uppercase">DATI SPECIFICI METALLO</span>
+        <span class="text-xs">
+          Configura il metallo e indica se la quantita va interpretata come pezzi o grammi.
+        </span>
+      </div>
+
+      <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
+        <div class="flex flex-col gap-2">
+          <label for="asset-metal-type" class="text-xs font-bold uppercase">METALLO</label>
+          <p-select
+            inputId="asset-metal-type"
+            [options]="metalTypeOptions()"
+            optionLabel="label"
+            optionValue="value"
+            class="ce-input w-full flex items-center justify-between"
+            [class.p-invalid]="invalidField(form().metalType)"
+            [formField]="$any(form().metalType)"
+            appendTo="body"
+          />
+          <!-- Mostra gli errori del metallo -->
+          @if (form().metalType().touched()) {
+            @for (error of form().metalType().errors(); track error.kind) {
+              <div role="alert" class="text-xs font-semibold text-red-900">
+                {{ error.message }}
+              </div>
+            }
+          }
+        </div>
+
+        <div class="flex flex-col gap-2">
+          <label for="asset-purity" class="text-xs font-bold uppercase">PUREZZA</label>
+          <p-inputnumber
+            inputId="asset-purity"
+            [minFractionDigits]="3"
+            [maxFractionDigits]="4"
+            class="w-full"
+            [class.p-invalid]="invalidField(form().purity)"
+            inputStyleClass="ce-input w-full"
+            [formField]="$any(form().purity)"
+          />
+          <!-- Mostra gli errori della purezza -->
+          @if (form().purity().touched()) {
+            @for (error of form().purity().errors(); track error.kind) {
+              <div role="alert" class="text-xs font-semibold text-red-900">
+                {{ error.message }}
+              </div>
+            }
+          }
+        </div>
+      </div>
+
+      <div class="flex flex-col gap-2">
+        <span class="text-xs font-bold uppercase">MODALITA QUANTITA</span>
+        <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
+          <button
+            pButton
+            type="button"
+            class="min-h-14 justify-start px-4 text-left"
+            [class.ce-button]="config().preciousMetalQuantityMode === 'byPiece'"
+            [class.ce-button-outlined]="config().preciousMetalQuantityMode !== 'byPiece'"
+            (click)="preciousMetalQuantityModeChange.emit('byPiece')"
+          >
+            <span class="flex flex-col items-start">
+              <span class="font-bold uppercase">A pezzi</span>
+              <span class="text-xs normal-case">
+                Quantita = numero pezzi. Peso = grammi per pezzo.
+              </span>
+            </span>
+          </button>
+
+          <button
+            pButton
+            type="button"
+            class="min-h-14 justify-start px-4 text-left"
+            [class.ce-button]="config().preciousMetalQuantityMode === 'byWeight'"
+            [class.ce-button-outlined]="config().preciousMetalQuantityMode !== 'byWeight'"
+            (click)="preciousMetalQuantityModeChange.emit('byWeight')"
+          >
+            <span class="flex flex-col items-start">
+              <span class="font-bold uppercase">A grammi</span>
+              <span class="text-xs normal-case">
+                Quantita = grammi totali posseduti. Peso per pezzo assente.
+              </span>
+            </span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Mostra il peso per pezzo solo nella modalita a pezzi -->
+      @if (config().showMetalWeightField) {
+        <div class="flex flex-col gap-2">
+          <label for="asset-weight-grams" class="text-xs font-bold uppercase">
+            GRAMMI PER PEZZO
+          </label>
+          <p-inputnumber
+            inputId="asset-weight-grams"
+            [minFractionDigits]="0"
+            [maxFractionDigits]="4"
+            class="w-full"
+            [class.p-invalid]="invalidField(form().weightGrams)"
+            inputStyleClass="ce-input w-full"
+            [formField]="$any(form().weightGrams)"
+          />
+          <!-- Mostra gli errori del peso -->
+          @if (form().weightGrams().touched()) {
+            @for (error of form().weightGrams().errors(); track error.kind) {
+              <div role="alert" class="text-xs font-semibold text-red-900">
+                {{ error.message }}
+              </div>
+            }
+          }
+        </div>
+      }
+
+      <div class="flex flex-col gap-2">
+        <span class="text-xs font-bold uppercase">MODALITA PREZZO</span>
+        <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
+          <button
+            pButton
+            type="button"
+            class="min-h-14 justify-start px-4 text-left"
+            [class.ce-button]="!config().isCustom"
+            [class.ce-button-outlined]="config().isCustom"
+            (click)="preciousMetalPriceModeChange.emit(false)"
+          >
+            <span class="flex flex-col items-start">
+              <span class="font-bold uppercase">Prezzo automatico</span>
+              <span class="text-xs normal-case">
+                Il backend usa il provider metalli. Nessun prezzo manuale inviato.
+              </span>
+            </span>
+          </button>
+
+          <button
+            pButton
+            type="button"
+            class="min-h-14 justify-start px-4 text-left"
+            [class.ce-button]="config().isCustom"
+            [class.ce-button-outlined]="!config().isCustom"
+            (click)="preciousMetalPriceModeChange.emit(true)"
+          >
+            <span class="flex flex-col items-start">
+              <span class="font-bold uppercase">Prezzo manuale</span>
+              <span class="text-xs normal-case">
+                Il frontend invia `currentPrice` per grammo nel payload.
+              </span>
+            </span>
+          </button>
+        </div>
+      </div>
+    </div>
+  } @else {
+    <div class="border-2 border-primary p-3 text-sm">
+      Asset fisico manuale: ticker e provider automatici sono disattivati e `isCustom` viene
+      sempre forzato a `true`.
+    </div>
+  }
+
+  <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
+    <!-- Mostra il prezzo corrente solo quando il backend accetta un prezzo manuale -->
+    @if (config().showCurrentPriceField) {
+      <div class="flex flex-col gap-2">
+        <label for="asset-current-price" class="text-xs font-bold uppercase">
+          {{ config().currentPriceLabel }}
+        </label>
+        <p-inputnumber
+          inputId="asset-current-price"
+          [minFractionDigits]="2"
+          [maxFractionDigits]="4"
+          class="w-full"
+          [class.p-invalid]="invalidField(form().currentPrice)"
+          inputStyleClass="ce-input w-full"
+          [formField]="$any(form().currentPrice)"
+        />
+        <span class="text-xs">{{ config().currentPriceHint }}</span>
+        <!-- Mostra gli errori del prezzo corrente -->
+        @if (form().currentPrice().touched()) {
+          @for (error of form().currentPrice().errors(); track error.kind) {
+            <div role="alert" class="text-xs font-semibold text-red-900">
+              {{ error.message }}
+            </div>
+          }
+        }
+      </div>
+    }
+
+    <div class="flex flex-col gap-2">
+      <label for="asset-tax-rate" class="text-xs font-bold uppercase">ALIQUOTA IMPOSTA %</label>
+      <p-inputnumber
+        inputId="asset-tax-rate"
+        [minFractionDigits]="0"
+        [maxFractionDigits]="2"
+        class="w-full"
+        [class.p-invalid]="invalidField(form().taxRate)"
+        inputStyleClass="ce-input w-full"
+        [formField]="$any(form().taxRate)"
+      />
+      <!-- Mostra gli errori dell'aliquota -->
+      @if (form().taxRate().touched()) {
+        @for (error of form().taxRate().errors(); track error.kind) {
+          <div role="alert" class="text-xs font-semibold text-red-900">
+            {{ error.message }}
+          </div>
+        }
+      }
+    </div>
+  </div>
+
+  <!-- Mostra la posizione iniziale solo se esiste un conto selezionato -->
+  @if (showInitialPositionFields()) {
+    <app-save-asset-initial-position-form
+      [form]="form()"
+      [quantityLabel]="config().quantityLabel"
+      [quantityHint]="config().quantityHint"
+    />
+  }
+</div>

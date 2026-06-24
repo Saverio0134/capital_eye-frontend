@@ -1,0 +1,12 @@
+/* TODO vedere se posso utilizzare :host */
+
+:root {
+  --color-liquidity: color-mix(in oklch, var(--color-primary) 70%, white);
+  --color-investments: color-mix(in oklch, var(--color-primary) 40%, white);
+  --color-physical: color-mix(in oklch, var(--color-primary) 10%, white);
+
+
+  --color-liquidity-hover: color-mix(in oklch, var(--color-primary) 80%, white);
+  --color-investments-hover: color-mix(in oklch, var(--color-primary) 45%, white);
+  --color-physical-hover: color-mix(in oklch, var(--color-primary) 15%, white);
+}

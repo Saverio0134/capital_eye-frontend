@@ -1,0 +1,85 @@
+<div class="ce-container-outlined">
+  <form
+    class="grid grid-cols-1 gap-x-4 gap-y-0 lg:grid-cols-[2fr_1.2fr_1.4fr_auto]"
+    [formRoot]="liquidityForm()"
+  >
+    <div class="flex flex-col gap-2">
+      <label for="register-liquidity-account" class="text-xs font-bold uppercase"> Banca </label>
+      <p-select
+        inputId="register-liquidity-account"
+        [options]="accountOptions()"
+        optionLabel="label"
+        optionValue="value"
+        appendTo="body"
+        class="ce-input flex min-h-11 w-full items-center"
+        [class.p-invalid]="invalidRegisterField()(liquidityForm().accountUuid)"
+        [formField]="$any(liquidityForm().accountUuid)"
+      />
+      <div class="min-h-5">
+        @if (liquidityForm().accountUuid().touched()) {
+          @for (error of liquidityForm().accountUuid().errors(); track error.kind) {
+            <div role="alert" class="text-xs font-semibold text-red-900">
+              {{ error.message }}
+            </div>
+          }
+        }
+      </div>
+    </div>
+
+    <div class="flex flex-col gap-2">
+      <label for="register-liquidity-date" class="text-xs font-bold uppercase">Data</label>
+      <app-date-picker
+        inputId="register-liquidity-date"
+        [invalid]="invalidRegisterField()(liquidityForm().date)"
+        [formField]="$any(liquidityForm().date)"
+      />
+      <div class="min-h-5">
+        @if (liquidityForm().date().touched()) {
+          @for (error of liquidityForm().date().errors(); track error.kind) {
+            <div role="alert" class="text-xs font-semibold text-red-900">
+              {{ error.message }}
+            </div>
+          }
+        }
+      </div>
+    </div>
+
+    <div class="flex flex-col gap-2">
+      <label for="register-liquidity-amount" class="text-xs font-bold uppercase">Importo</label>
+      <p-inputnumber
+        inputId="register-liquidity-amount"
+        mode="currency"
+        [currency]="selectedCurrency()"
+        locale="it-IT"
+        [minFractionDigits]="2"
+        [maxFractionDigits]="2"
+        class="w-full"
+        [class.p-invalid]="invalidRegisterField()(liquidityForm().amount)"
+        inputStyleClass="ce-input min-h-11 w-full"
+        [formField]="$any(liquidityForm().amount)"
+      />
+      <div class="min-h-5">
+        @if (liquidityForm().amount().touched()) {
+          @for (error of liquidityForm().amount().errors(); track error.kind) {
+            <div role="alert" class="text-xs font-semibold text-red-900">
+              {{ error.message }}
+            </div>
+          }
+        }
+      </div>
+    </div>
+
+    <div class="flex flex-col gap-2">
+      <span class="text-xs font-bold uppercase text-on-primary">-</span>
+      <button
+        pButton
+        type="submit"
+        class="ce-button min-h-11 w-full justify-center px-6 font-bold uppercase lg:w-auto"
+        [disabled]="!canSave()"
+        [loading]="isSaving()"
+      >
+        Registra liquidità
+      </button>
+    </div>
+  </form>
+</div>

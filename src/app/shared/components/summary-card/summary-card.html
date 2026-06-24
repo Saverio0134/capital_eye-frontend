@@ -1,0 +1,31 @@
+<div class="ce-container-outlined flex flex-col gap-2 flex-1">
+  <div class="flex 2xl:justify-between 2xl:flex-row flex-col gap-2 2xl:items-center">
+    <span>{{ label() }}</span>
+    @if (lastUpdate()) {
+      <span class="text-xs">u.a. {{ lastUpdate() | date: 'dd/MM/yyyy HH:mm' }}</span>
+    }
+  </div>
+  <span class="text-4xl font-bold text-nowrap">{{
+    (isLoading() ? randomNumber() : value()) | currency: 'EUR' : 'symbol' : '1.2-2'
+  }}</span>
+
+  @if (growth() != null) {
+    <div
+      class="space-x-1"
+      [class.text-green-900]="growth() > 0.01"
+      [class.text-red-900]="growth() < 0"
+    >
+      <span class="md:text-sm">
+        @if (growth() >= 0.01) {
+          ▲
+        } @else if (growth() < 0.01 && growth() >= 0) {
+          =
+        } @else if (growth() < 0) {
+          ▼
+        }
+      </span>
+      <span class="md:text-xs">{{ growth() | number: '1.2-2' }}%</span>
+      <span class="text-xs text-primary">vs mese scorso</span>
+    </div>
+  }
+</div>

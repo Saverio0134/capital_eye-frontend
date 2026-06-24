@@ -1,0 +1,244 @@
+<div class="space-y-4 flex flex-col min-h-full xl:[@media_(min-height:820px)]:h-full">
+  <!-- TOTALE ASSETS -->
+  <div class="border-3 border-primary p-4 flex flex-col gap-2">
+    <div class="flex justify-between items-center flex-wrap gap-x-2 gap-y-1">
+      <span class="text-xl">TOTALE ASSETS (netto)</span>
+      <!-- Mostra l'ultimo update -->
+      @if (lastUpdate()) {
+        <span class="md:text-sm text-xs"
+          >Ultimo aggiornamento il {{ lastUpdate() | date: 'dd/MM/yyyy HH:mm' }}</span
+        >
+      }
+    </div>
+    <div class="flex flex-wrap gap-x-2 gap-y-1">
+      <span class="md:text-6xl text-5xl font-bold">{{
+        totalAssetsValue() | currency: portfolioValuationCurrency() : 'symbol' : '1.2-2'
+      }}</span>
+      <div class="flex flex-col justify-end">
+        <div
+          class="flex md:block gap-1 items-end md:space-x-1.5"
+          [class.text-green-900]="growthAssets() > 0"
+          [class.text-red-900]="growthAssets() < 0"
+        >
+          <span class="md:text-xl">
+            <!-- Mostra il verso crescita -->
+            @if (growthAssets() >= 0.01) {
+              ▲
+            } @else if (growthAssets() < 0) {
+              ▼
+            } @else {
+              =
+            }
+          </span>
+          <span class="md:text-xl">{{ growthAssets() | number: '1.2-2' }}%</span>
+          <div class="text-xs md:text-sm text-primary mb-0.5">vs mese precedente</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FILTRI E AZIONI -->
+  <div class="flex justify-between items-end flex-wrap gap-4">
+    <div class="flex gap-4 flex-col md:flex-row w-full xl:w-auto">
+      <div class="flex flex-col gap-1 flex-1 xl:flex-none">
+        <label class="text-xs font-bold">TIPO ASSET</label>
+        <p-select
+          [options]="assetTypeOptions"
+          [ngModel]="selectedAssetType()"
+          (ngModelChange)="selectedAssetType.set($event)"
+          optionLabel="label"
+          optionValue="value"
+          class="ce-input xl:w-60 w-full"
+        />
+      </div>
+      <div class="flex flex-col gap-1 flex-1 xl:flex-none">
+        <label class="text-xs font-bold">BANCA / PROVIDER</label>
+        <p-select
+          [options]="providerOptions()"
+          [ngModel]="selectedProvider()"
+          (ngModelChange)="selectedProvider.set($event)"
+          optionLabel="label"
+          optionValue="value"
+          class="ce-input xl:w-60 w-full"
+        />
+      </div>
+      <!-- Mostra il reset filtri -->
+      @if (selectedAssetType() || selectedProvider()) {
+        <div class="flex items-end">
+          <button
+            pButton
+            class="ce-button-outlined"
+            (click)="selectedAssetType.set(null); selectedProvider.set(null)"
+          >
+            <lucide-icon [img]="FunnelXIcon" />
+          </button>
+        </div>
+      }
+    </div>
+    <div class="flex gap-3 flex-row w-full xl:w-auto">
+      <button
+        pButton
+        class="ce-button flex items-center gap-2 px-4 py-2 font-bold uppercase transition-all flex-1 xl:flex-none"
+        (click)="openCreateDialog('physical')"
+      >
+        <lucide-icon [img]="PlusIcon" [size]="18" />
+        NUOVO ASSET FISICO
+      </button>
+      <button
+        pButton
+        class="ce-button flex items-center gap-2 px-4 py-2 font-bold uppercase transition-all flex-1 xl:flex-none"
+        (click)="openCreateDialog('financial')"
+      >
+        <lucide-icon [img]="PlusIcon" [size]="18" />
+        NUOVO ASSET FINANZIARIO
+      </button>
+    </div>
+  </div>
+
+  <app-save-asset
+    [visible]="isCreateDialogOpen()"
+    [mode]="createAssetMode()"
+    [asset]="selectedAsset()"
+    (visibleChange)="onDialogVisibilityChange($event)"
+    (assetSaved)="onAssetSaved()"
+  />
+
+  <app-asset-details-dialog
+    [visible]="isAssetDetailsDialogOpen()"
+    [asset]="selectedAssetForDetails()"
+    (visibleChange)="onAssetDetailsDialogVisibilityChange($event)"
+    (editRequested)="onAssetEditRequested($event)"
+    (assetDeleted)="onAssetDeleted()"
+  />
+
+  <app-asset-accounts-dialog
+    [visible]="isManageAccountsDialogOpen()"
+    [asset]="selectedAssetForAccounts()"
+    (visibleChange)="onManageAccountsDialogVisibilityChange($event)"
+    (assetAccountsChanged)="onAssetAccountsChanged()"
+  />
+
+  <!-- TABELLA ASSETS -->
+
+  <p-table
+    [value]="filteredAssets()"
+    [rows]="5"
+    [paginator]="allAssets().length > 5"
+    class="ce-table"
+    sortField="name"
+  >
+    <ng-template pTemplate="header">
+      <tr class="uppercase text-xs">
+        <th class="p-4 text-left">Nome Asset</th>
+        <th class="p-4 text-left">Tipologia</th>
+        <th class="p-4 text-left">Provider</th>
+        <th class="p-4 text-right">Quantità</th>
+        <th class="p-4 text-right">Valore Netto</th>
+        <th class="p-4 text-right">Performance</th>
+        <th class="p-4 text-center">Azioni</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-asset>
+      <tr class="border-b border-primary/20 text-sm">
+        <td class="p-4 font-bold">{{ asset.name }}</td>
+        <td class="p-4">
+          <span class="border border-primary px-2 py-0.5 text-[10px] whitespace-nowrap">
+            {{ getAssetTypeLabel(asset.type) }}
+          </span>
+        </td>
+        <td class="p-4">
+          <div class="font-bold">{{ asset.provider }}</div>
+          <div class="text-xs text-primary">
+            {{ asset.positions.length }} {{ asset.positions.length === 1 ? 'conto' : 'conti' }}
+          </div>
+        </td>
+        <td class="p-4 text-right font-bold tabular-nums">
+          {{ asset.quantity | number: '1.2-2' }}
+        </td>
+        <td class="p-4 text-right font-bold tabular-nums">
+          {{ asset.netValue | currency: asset.valuationCurrency : 'symbol' : '1.2-2' }}
+        </td>
+        <td class="p-4 text-right font-bold tabular-nums">
+          <span
+            class="bg-primary text-on-primary px-2 py-0.5"
+            [class.ce-container-positive]="asset.performance > 0"
+            [class.ce-container-negative]="asset.performance < 0"
+            >{{ asset.performance > 0 ? '+' : '' }}{{ asset.performance | number: '1.2-2' }}%</span
+          >
+        </td>
+        <td class="p-4 text-center">
+          <div class="flex items-center justify-center gap-3">
+            <button
+              pButton
+              type="button"
+              class="!p-0 !text-sm underline underline-offset-2"
+              severity="secondary"
+              variant="text"
+              (click)="openAssetDetailsDialog(asset)"
+            >
+              Dettagli
+            </button>
+            <button
+              pButton
+              type="button"
+              class="!p-0 !text-sm underline underline-offset-2"
+              severity="secondary"
+              variant="text"
+              (click)="openManageAccountsDialog(asset)"
+            >
+              Conti
+            </button>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template #emptymessage>
+      <tr>
+        <td colspan="100%" class="pl-4 text-sm">
+          {{ isGlobalLoading() ? 'Caricamento assets...' : 'Nessun asset trovato' }}
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+
+  <!-- GRAFICI -->
+  <div class="flex gap-3 flex-col lg:flex-row flex-1 items-stretch min-h-50">
+    <!-- DISTRIBUTION CHART -->
+    <div class="ce-container-outlined flex flex-col gap-4 lg:min-w-120 min-h-0 min-w-0">
+      <span class="font-bold uppercase text-sm">Distribuzione Asset</span>
+      <div class="flex-1 relative overflow-hidden">
+        <!-- Mostra il chart pronto -->
+        @if (!isGlobalLoading()) {
+          <app-distribution-chart
+            class="block h-full w-full"
+            [labels]="assetChartLabels()"
+            [values]="assetChartValues()"
+          />
+        } @else {
+          <div>Loading...</div>
+        }
+      </div>
+    </div>
+
+    <!-- TREND CHART -->
+    <div class="ce-container-outlined flex flex-col gap-4 flex-1 min-h-0 min-w-0">
+      <span class="font-bold uppercase text-sm">
+        Trend Mensile
+        <span class="text-primary font-normal">
+          - {{ filteredAssets().length }} asset filtrati
+        </span>
+      </span>
+      <div class="flex-1 relative overflow-hidden">
+        <!-- Mostra il trend pronto -->
+        @if (!isGlobalLoading()) {
+          <app-trend-chart
+            class="block h-full w-full"
+            [monthlyNetWort]="filteredAssetsMonthlyNetWorth()"
+          />
+        } @else {
+          <div>Loading...</div>
+        }
+      </div>
+    </div>
+  </div>
+</div>
