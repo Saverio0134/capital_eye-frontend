@@ -542,8 +542,12 @@ export const seedMonthlyTable: LiquidityMonthlyTable = (() => {
       const accountSnapshots = (snapshotMap.get(account.uuid) ?? []).sort(
         (a, b) => a.date.getTime() - b.date.getTime(),
       );
-      const current = accountSnapshots[i]?.amount ?? 0;
-      const previous = i > 0 ? (accountSnapshots[i - 1]?.amount ?? 0) : current;
+      // Gli snapshot sono ordinati cronologicamente (0 = piu vecchio, N-1 = piu recente),
+      // mentre l'indice i del ciclo va da N-1 (piu vecchio) a 0 (piu recente):
+      // va mappato invertito per allineare data e valore.
+      const snapshotIndex = liquidityMonthsCount - 1 - i;
+      const current = accountSnapshots[snapshotIndex]?.amount ?? 0;
+      const previous = snapshotIndex > 0 ? (accountSnapshots[snapshotIndex - 1]?.amount ?? 0) : current;
       const delta = Number((current - previous).toFixed(2));
       values[account.uuid] = current;
       deltas[account.uuid] = delta;
