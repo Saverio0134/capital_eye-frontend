@@ -6,7 +6,7 @@
   NODE_VERSION = "22.22.0"
 
 [build]
-  command = "npm run build:demo"
+  command = "npm run build:demo 2>&1 | tee build-demo.log; exit ${PIPESTATUS[0]}"
   publish = "dist/capital_eye-frontend/browser"
 
 # Redirect SPA: ogni route serve index.html per Angular router.
