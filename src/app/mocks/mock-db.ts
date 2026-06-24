@@ -21,6 +21,7 @@ import {
 } from './seed-data';
 import { AccountType } from '../enum/account.enum';
 import { Currency, MetalType } from '../models/asset.model';
+import { calculateAssetTotalValue } from '../utils/asset.utils';
 
 // Genera un identificativo univoco stabile anche quando crypto non e disponibile.
 function generateUuid(prefix: string): string {
@@ -52,13 +53,17 @@ function recomputeAllAssetsWithNet(current: AllAssetsWithNet): AllAssetsWithNet 
 }
 
 // Costruisce un asset completo da payload di creazione, applicando defaults coerenti.
+// Usa calculateAssetTotalValue per rispettare la semantica backend sui metalli.
 function buildAssetFromPayload(payload: Record<string, unknown>, account: FinancialAccount | undefined): Asset {
   const uuid = generateUuid('asset');
+  const type = (payload['type'] as AssetType) ?? AssetType.STOCK;
   const quantity = typeof payload['quantity'] === 'number' ? payload['quantity'] : 0;
   const currentPrice = typeof payload['currentPrice'] === 'number' ? payload['currentPrice'] : 0;
   const averageBuyPrice = typeof payload['averageBuyPrice'] === 'number' ? payload['averageBuyPrice'] : 0;
-  const totalValue = Number((quantity * currentPrice).toFixed(2));
-  const costBasis = Number((quantity * averageBuyPrice).toFixed(2));
+  const weightGrams = typeof payload['weightGrams'] === 'number' ? payload['weightGrams'] : null;
+  const purity = typeof payload['purity'] === 'number' ? payload['purity'] : null;
+  const totalValue = Number(calculateAssetTotalValue(type, quantity, currentPrice, weightGrams, purity).toFixed(2));
+  const costBasis = Number(calculateAssetTotalValue(type, quantity, averageBuyPrice, weightGrams, purity).toFixed(2));
   const unrealizedGain = Number((totalValue - costBasis).toFixed(2));
   const taxRate = typeof payload['taxRate'] === 'number' ? payload['taxRate'] : 0.26;
   const tax = Number((Math.max(unrealizedGain, 0) * taxRate).toFixed(2));
@@ -86,13 +91,13 @@ function buildAssetFromPayload(payload: Record<string, unknown>, account: Financ
     uuid,
     userId: 'demo-user',
     name: typeof payload['name'] === 'string' ? payload['name'] : 'Asset',
-    type: (payload['type'] as AssetType) ?? AssetType.STOCK,
+    type,
     baseCurrency: (payload['baseCurrency'] as Currency) ?? Currency.EUR,
     ticker: typeof payload['ticker'] === 'string' ? payload['ticker'] : null,
     isCustom: Boolean(payload['isCustom']),
     metalType: (payload['metalType'] as MetalType | null) ?? null,
-    weightGrams: typeof payload['weightGrams'] === 'number' ? payload['weightGrams'] : null,
-    purity: typeof payload['purity'] === 'number' ? payload['purity'] : null,
+    weightGrams,
+    purity,
     quantity,
     currentPrice,
     totalValue,
@@ -212,8 +217,9 @@ class MockDb {
           weightGrams: payload['weightGrams'] !== undefined ? (payload['weightGrams'] as number | null) : asset.weightGrams,
           purity: payload['purity'] !== undefined ? (payload['purity'] as number | null) : asset.purity,
         } as Asset;
-        const totalValue = Number((updated.quantity * updated.currentPrice).toFixed(2));
-        const costBasis = Number((updated.quantity * updated.averageBuyPrice).toFixed(2));
+        // Ricalcola totalValue e costBasis rispettando la semantica metalli.
+        const totalValue = Number(calculateAssetTotalValue(updated.type, updated.quantity, updated.currentPrice, updated.weightGrams, updated.purity).toFixed(2));
+        const costBasis = Number(calculateAssetTotalValue(updated.type, updated.quantity, updated.averageBuyPrice, updated.weightGrams, updated.purity).toFixed(2));
         const unrealizedGain = Number((totalValue - costBasis).toFixed(2));
         const tax = Number((Math.max(unrealizedGain, 0) * updated.taxRate).toFixed(2));
         updated.totalValue = totalValue;

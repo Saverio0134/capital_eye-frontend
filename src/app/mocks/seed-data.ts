@@ -18,6 +18,7 @@ import {
 } from '../models/transaction.model';
 import { MonthlyNetWorthWithGrowth } from '../models/networth.model';
 import { AccountType } from '../enum/account.enum';
+import { calculateAssetTotalValue } from '../utils/asset.utils';
 
 // Riferimento temporale: usa "ora" al runtime cosi i dati restano recenti.
 const NOW = new Date();
@@ -88,7 +89,7 @@ export const seedFinancialAccounts: FinancialAccount[] = [
   },
   {
     uuid: 'acc-2',
-    name: 'Conto Risparmio Illimite',
+    name: 'Conto Risparmio Illimitato',
     type: 'BANK' satisfies AccountType,
     currency: Currency.EUR,
     createdAt: new Date(daysAgoISO(760)),
@@ -125,6 +126,8 @@ export const seedFinancialAccounts: FinancialAccount[] = [
 /* ------------------------------------------------------------------ */
 
 // Costruttore campo asset con defaults coerenti e guadagno calcolato dal costo.
+// Usa calculateAssetTotalValue per rispettare la semantica backend sui metalli
+// preziosi (prezzo al grammo * grammi per pezzo * quantita * purezza).
 function buildAsset(input: {
   uuid: string;
   name: string;
@@ -142,8 +145,8 @@ function buildAsset(input: {
   taxRate: number;
   position: { accountUuid: string; accountName: string; accountType: AccountType; currency: Currency; quantity: number } | null;
 }): Asset {
-  const totalValue = Number((input.currentPrice * input.quantity).toFixed(2));
-  const costBasis = Number((input.averageBuyPrice * input.quantity).toFixed(2));
+  const totalValue = Number(calculateAssetTotalValue(input.type, input.quantity, input.currentPrice, input.weightGrams, input.purity).toFixed(2));
+  const costBasis = Number(calculateAssetTotalValue(input.type, input.quantity, input.averageBuyPrice, input.weightGrams, input.purity).toFixed(2));
   const unrealizedGain = Number((totalValue - costBasis).toFixed(2));
   const taxableGain = Math.max(unrealizedGain, 0);
   const tax = Number((taxableGain * input.taxRate).toFixed(2));
@@ -257,7 +260,7 @@ const intangibleAssetSeeds: Asset[] = [
     purity: null,
     quantity: 0.5,
     currentPrice: 60000,
-    averageBuyPrice: 40000,
+    averageBuyPrice: 46000,
     taxRate: 0.26,
     position: { accountUuid: 'acc-4', accountName: 'Crypto.com App', accountType: 'WALLET', currency: Currency.EUR, quantity: 0.5 },
   }),
@@ -372,19 +375,22 @@ const physicalAssetSeeds: Asset[] = [
 const allAssetSeeds = [...intangibleAssetSeeds, ...physicalAssetSeeds];
 
 // Calcola i Growth dei due gruppi dai valori mensili aggregati (ultimi 12 mesi).
-const intangibleMonthlyTotals = buildMonthlySeries(84524, 12, 0.018).map((p) => p.value);
-const physicalMonthlyTotals = buildMonthlySeries(301835, 12, 0.007).map((p) => p.value);
+// L'endValue della serie coincide con il netTotal reale calcolato dagli asset.
+const intangibleNetTotal = Number(intangibleAssetSeeds.reduce((sum, asset) => sum + asset.netValue, 0).toFixed(2));
+const physicalNetTotal = Number(physicalAssetSeeds.reduce((sum, asset) => sum + asset.netValue, 0).toFixed(2));
+const intangibleMonthlyTotals = buildMonthlySeries(intangibleNetTotal, 12, 0.018).map((p) => p.value);
+const physicalMonthlyTotals = buildMonthlySeries(physicalNetTotal, 12, 0.007).map((p) => p.value);
 
 export const seedAssetsWithNet: AllAssetsWithNet = {
   intangibleAssets: {
     assets: intangibleAssetSeeds,
-    netTotal: Number(intangibleAssetSeeds.reduce((sum, asset) => sum + asset.netValue, 0).toFixed(2)),
+    netTotal: intangibleNetTotal,
     growth: deriveGrowth(intangibleMonthlyTotals),
     lastUpdate: new Date(daysAgoISO(1)),
   },
   physicalAssets: {
     assets: physicalAssetSeeds,
-    netTotal: Number(physicalAssetSeeds.reduce((sum, asset) => sum + asset.netValue, 0).toFixed(2)),
+    netTotal: physicalNetTotal,
     growth: deriveGrowth(physicalMonthlyTotals),
     lastUpdate: new Date(daysAgoISO(1)),
   },
@@ -407,11 +413,28 @@ export const seedMonthlyVariations = allAssetSeeds.map((asset) => {
 });
 
 /* ------------------------------------------------------------------ */
+/* Liquidita: serie mensili per account (definite qui per consentire    */
+/* il calcolo del net worth che ne dipende)                            */
+/* ------------------------------------------------------------------ */
+
+// Serie mensile di liquidita per i 4 account con liquidita (esclusa la cassaforte).
+const liquidityAccountSeries: Record<string, { start: number; end: number }> = {
+  'acc-1': { start: 8000, end: 12000 },
+  'acc-2': { start: 15000, end: 22000 },
+  'acc-3': { start: 2000, end: 3500 },
+  'acc-4': { start: 1000, end: 2800 },
+};
+
+// Totale liquidita dell'ultimo snapshot (somma dei valori `end` dei account).
+const liquidityTotalLatest = Object.values(liquidityAccountSeries).reduce((sum, series) => sum + series.end, 0);
+
+/* ------------------------------------------------------------------ */
 /* Net worth mensile + growth (dashboard trend)                        */
 /* ------------------------------------------------------------------ */
 
+// La serie net worth parte dal valore attuale (intangibili + fisici + liquidita).
 const netWorthMonthlyTotals = buildMonthlySeries(
-  84524 + 301835 + 40300,
+  intangibleNetTotal + physicalNetTotal + liquidityTotalLatest,
   12,
   0.011,
 ).map((point) => ({ date: new Date(point.date), value: point.value }));
@@ -428,14 +451,6 @@ export const seedSnapshotNetWorth: MonthlyNetWorthWithGrowth = {
 /* ------------------------------------------------------------------ */
 /* Liquidita: snapshot, totale e tabella mensile                      */
 /* ------------------------------------------------------------------ */
-
-// Serie mensile di liquidita per i 4 account con liquidita (esclusa la cassaforte).
-const liquidityAccountSeries: Record<string, { start: number; end: number }> = {
-  'acc-1': { start: 8000, end: 12000 },
-  'acc-2': { start: 15000, end: 22000 },
-  'acc-3': { start: 2000, end: 3500 },
-  'acc-4': { start: 1000, end: 2800 },
-};
 
 const liquidityMonthsCount = 8;
 
@@ -615,8 +630,8 @@ export const seedTransactions: Transaction[] = [
     accountUuid: 'acc-4',
     type: 'BUY',
     date: monthStartISO(8),
-    quantity: 0.3,
-    totalAmount: 13000,
+    quantity: 0.25,
+    totalAmount: 10000,
     fees: null,
     notes: 'DCA Bitcoin',
     realizedGain: null,
@@ -654,8 +669,8 @@ export const seedTransactions: Transaction[] = [
     accountUuid: 'acc-3',
     type: 'BUY',
     date: monthStartISO(5),
-    quantity: 30,
-    totalAmount: 4500,
+    quantity: 35,
+    totalAmount: 5250,
     fees: 5,
     notes: 'Ricarica posizione',
     realizedGain: null,
@@ -667,8 +682,8 @@ export const seedTransactions: Transaction[] = [
     accountUuid: 'acc-3',
     type: 'BUY',
     date: monthStartISO(4),
-    quantity: 10,
-    totalAmount: 3000,
+    quantity: 15,
+    totalAmount: 4500,
     fees: 5,
     notes: null,
     realizedGain: null,
@@ -681,7 +696,7 @@ export const seedTransactions: Transaction[] = [
     type: 'BUY',
     date: monthStartISO(3),
     quantity: 0.2,
-    totalAmount: 11000,
+    totalAmount: 10000,
     fees: null,
     notes: 'DCA Bitcoin',
     realizedGain: null,
@@ -750,19 +765,6 @@ export const seedTransactions: Transaction[] = [
     totalAmount: 3000,
     fees: null,
     notes: 'DCA recente',
-    realizedGain: null,
-    taxAmount: null,
-  }),
-  buildTransaction({
-    uuid: 'tx-14',
-    assetUuid: 'asset-3',
-    accountUuid: 'acc-3',
-    type: 'BUY',
-    date: daysAgoISO(2),
-    quantity: 5,
-    totalAmount: 2400,
-    fees: 5,
-    notes: 'Ricarica ETF',
     realizedGain: null,
     taxAmount: null,
   }),
