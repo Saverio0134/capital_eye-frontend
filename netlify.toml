@@ -1,0 +1,13 @@
+# Configurazione deploy Netlify per la demo pubblica.
+# La modalita demo usa dati mockati (vedi src/app/mocks) e nessun backend reale.
+
+[build]
+  command = "npm run build:demo"
+  publish = "dist/capital_eye-frontend/browser"
+
+# Redirect SPA: ogni route serve index.html per Angular router.
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

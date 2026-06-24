@@ -5,6 +5,10 @@ import { AuthForm, FirebaseApi } from '../../api/firebase-api/firebase-api';
 import { Router } from '@angular/router';
 import { User } from 'firebase/auth';
 import { LoginProviders } from '../../../enum/loginProviders.enum';
+import { environment } from '../../../../environments/environment';
+
+// Utente demo statico ritornato in modalita skipAuth.
+const DEMO_USER = { id: 'demo-user', email: 'demo@capitaleye.app', name: 'Demo Utente' };
 
 @Injectable({
   providedIn: 'root',
@@ -20,11 +24,23 @@ export class AuthStore {
   private unsubscribeAuth?: Subscription;
 
   async bootstrapAuth(): Promise<void> {
+    // Demo mode: bypassa Firebase, imposta token e utente fittizi.
+    if (environment.skipAuth) {
+      this.authToken.set('demo-token');
+      this.userData.set(DEMO_USER);
+      return;
+    }
+
     const user = await firstValueFrom(this.firebaseApi.authState$);
     await this.handleUser(user);
   }
 
   startAuthListener(): void {
+    // Demo mode: nessun listener Firebase attivo.
+    if (environment.skipAuth) {
+      return;
+    }
+
     if (this.unsubscribeAuth) return;
     this.unsubscribeAuth = this.firebaseApi.authState$.subscribe((user) => {
       this.handleUser(user);

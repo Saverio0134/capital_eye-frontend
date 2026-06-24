@@ -297,7 +297,7 @@ const physicalAssetSeeds: Asset[] = [
     currentPrice: 70,
     averageBuyPrice: 55,
     taxRate: 0.26,
-    position: { accountUuid: 'acc-5', accountName: 'Cassaforte di Casa', accountType: 'BANK' === 'BANK' ? 'PHYSICAL_VAULT' : 'PHYSICAL_VAULT', currency: Currency.EUR, quantity: 1 },
+    position: { accountUuid: 'acc-5', accountName: 'Cassaforte di Casa', accountType: 'PHYSICAL_VAULT', currency: Currency.EUR, quantity: 1 },
   }),
   buildAsset({
     uuid: 'asset-7',

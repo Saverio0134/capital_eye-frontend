@@ -15,6 +15,7 @@ import Nora from '@primeuix/themes/nora';
 import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
 import { authInterceptor } from './interceptors/auth.interceptor';
 import { apiErrorInterceptor } from './interceptors/api-error.interceptor';
+import { mockHttpInterceptor } from './mocks/mock-handler';
 import { AuthStore } from './services/store/auth-store/auth-store';
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -31,7 +32,10 @@ export const appConfig: ApplicationConfig = {
     provideAnimationsAsync(),
     provideRouter(routes, withViewTransitions()),
     provideClientHydration(withEventReplay()),
-    provideHttpClient(withInterceptors([authInterceptor, apiErrorInterceptor]), withFetch()),
+    provideHttpClient(
+      withInterceptors([mockHttpInterceptor, authInterceptor, apiErrorInterceptor]),
+      withFetch(),
+    ),
     MessageService,
     providePrimeNG({
       zIndex: {

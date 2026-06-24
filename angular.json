@@ -61,6 +61,27 @@
                   "with": "src/environments/environment.development.ts"
                 }
               ]
+            },
+            "demo": {
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "500kB",
+                  "maximumError": "1MB"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "4kB",
+                  "maximumError": "8kB"
+                }
+              ],
+              "outputHashing": "all",
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.demo.ts"
+                }
+              ]
             }
           },
           "defaultConfiguration": "production"
@@ -73,6 +94,9 @@
             },
             "development": {
               "buildTarget": "capital_eye-frontend:build:development"
+            },
+            "demo": {
+              "buildTarget": "capital_eye-frontend:build:demo"
             }
           },
           "defaultConfiguration": "development"
