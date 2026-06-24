@@ -41,9 +41,11 @@ Thumbs.db
 # Ignora cartella note locali
 note/
 
-# Firebase config
-src/environments/environment*.ts
-!src/environments/environment.template.ts
+# Firebase config: gitignore solo gli environment con segreti locali.
+# environment.ts e environment.demo.ts sono committabili (dummy/safe),
+# environment.development.ts e environment.production.ts contengono segreti.
+src/environments/environment.development.ts
+src/environments/environment.production.ts
 AGENTS.md
 docs
 .claude
