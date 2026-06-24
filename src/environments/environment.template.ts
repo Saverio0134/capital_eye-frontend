@@ -9,6 +9,8 @@
 
 export const environment = {
   production: false,
+  useMocks: false,
+  skipAuth: false,
   apiUrl: '',
   firebase: {
     apiKey: '',
