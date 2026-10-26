@@ -27,7 +27,7 @@ const contentSecurityPolicy = [
   // 'unsafe-inline' è richiesto dalla build di produzione Angular: l'handler
   // onload del critical CSS inlining e lo script inline dell'event replay (SSR)
   // verrebbero altrimenti bloccati.
-  `script-src 'self' 'unsafe-inline'`,
+  `script-src 'self' 'unsafe-inline' https://apis.google.com`,
   `style-src 'self' 'unsafe-inline'`,
   `img-src 'self' data: https://lh3.googleusercontent.com https://avatars.githubusercontent.com https://graph.facebook.com`,
   `font-src 'self' data:`,
@@ -81,9 +81,7 @@ app.use(
 app.use((req, res, next) => {
   angularApp
     .handle(req)
-    .then((response) =>
-      response ? writeResponseToNodeResponse(response, res) : next(),
-    )
+    .then((response) => (response ? writeResponseToNodeResponse(response, res) : next()))
     .catch(next);
 });
 
