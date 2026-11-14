@@ -1,6 +1,11 @@
 .ce-button-outlined {
   @apply border-2 border-primary p-2;
 
+  &.small {
+    @apply border-1 p-1 text-sm;
+
+  }
+
   @variant hover {
     @apply bg-on-primary-hover
   }
@@ -12,6 +17,11 @@
 
 .ce-button {
   @apply border-primary text-on-primary bg-primary p-2 border-2;
+
+  &.small {
+    @apply border-1 p-1 text-sm;
+
+  }
 
   @variant hover {
     @apply bg-primary-hover border-primary-hover

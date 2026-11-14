@@ -91,11 +91,46 @@
 
     <!-- LINE CHART -->
     <div class="ce-container-outlined flex flex-col gap-4 flex-1 min-h-0 min-w-0">
-      <span>ANDAMENTO MENSILE PATRIMONIO NETTO</span>
+      <div class="flex justify-between">
+        <div>ANDAMENTO MENSILE PATRIMONIO NETTO</div>
+        <div class="space-x-0.5">
+          <button
+            pButton
+            class="small"
+            [class.ce-button]="sizeTrendChart() === -6"
+            [class.ce-button-outlined]="sizeTrendChart() !== -6"
+            (click)="sizeTrendChart.set(-6)"
+          >
+            6m
+          </button>
+          <button
+            pButton
+            class="small"
+            [class.ce-button]="sizeTrendChart() === -12"
+            [class.ce-button-outlined]="sizeTrendChart() !== -12"
+            (click)="sizeTrendChart.set(-12)"
+          >
+            1y
+          </button>
+          <button
+            pButton
+            class="small"
+            [class.ce-button]="sizeTrendChart() === -24"
+            [class.ce-button-outlined]="sizeTrendChart() !== -24"
+            (click)="sizeTrendChart.set(-24)"
+          >
+            2y
+          </button>
+        </div>
+      </div>
       <div class="flex-1 relative overflow-hidden">
         <!-- Mostra il grafico solo quando la resource non sta ancora caricando. -->
         @if (!isGlobalLoading()) {
-          <app-trend-chart class="block w-full h-full" [monthlyNetWort]="monthlyNetWorth()" />
+          <app-trend-chart
+            class="block w-full h-full"
+            [monthlyNetWort]="monthlyNetWorth()"
+            [size]="this.sizeTrendChart()"
+          />
         } @else {
           <div>Loading...</div>
         }

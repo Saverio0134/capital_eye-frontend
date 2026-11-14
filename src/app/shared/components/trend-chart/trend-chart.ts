@@ -28,13 +28,13 @@ export class TrendChart {
   data = signal<TrendChartData | null>(null);
   options = signal<TrendChartOptions | null>(null);
   monthlyNetWort = input<MonthlyNetWorth[]>([]);
+  size = input<number>(-6);
   container = viewChild<ElementRef<HTMLElement>>('chartContainer');
-
   // Mantiene solo gli ultimi sei punti reali già ordinati per data.
   private readonly visibleMonthlyNetWorth = computed(() =>
     [...this.monthlyNetWort()]
       .sort((left, right) => new Date(left.date).getTime() - new Date(right.date).getTime())
-      .slice(-6),
+      .slice(this.size()),
   );
 
   private readonly labels = computed(() =>

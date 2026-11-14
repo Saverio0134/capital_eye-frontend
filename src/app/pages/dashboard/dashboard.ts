@@ -6,6 +6,7 @@ import { AssetStore } from '../../services/store/asset-store/asset-store';
 import { LiquidityStore } from '../../services/store/liquidity-store/liquidity-store';
 import { SnapshotStore } from '../../services/store/snapshot-store/snapshot-store';
 import { SummaryCardComponent } from '../../shared/components/summary-card/summary-card';
+import { ButtonModule } from 'primeng/button';
 @Component({
   selector: 'app-dashboard',
   imports: [
@@ -15,6 +16,7 @@ import { SummaryCardComponent } from '../../shared/components/summary-card/summa
     DecimalPipe,
     DatePipe,
     SummaryCardComponent,
+    ButtonModule,
   ],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css',
@@ -45,7 +47,11 @@ export default class Dashboard implements OnInit, OnDestroy {
   });
 
   distributionLabels = computed(() => ['Liquidità', 'Investimenti', 'Assets Fisici']);
-  distributionValues = computed(() => [this.liquidity(), this.intangibleAssets(), this.physicalAssets()]);
+  distributionValues = computed(() => [
+    this.liquidity(),
+    this.intangibleAssets(),
+    this.physicalAssets(),
+  ]);
 
   growthPhysical = computed(() => this.assetStore.physicalAssets()?.growth.oneMonth ?? 0);
 
@@ -83,7 +89,7 @@ export default class Dashboard implements OnInit, OnDestroy {
   });
 
   randomNumber = signal(0);
-
+  sizeTrendChart = signal(-6);
   private intervalId: any;
 
   constructor() {
