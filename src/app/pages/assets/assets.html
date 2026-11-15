@@ -248,18 +248,53 @@
 
     <!-- TREND CHART -->
     <div class="ce-container-outlined flex flex-col gap-4 flex-1 min-h-0 min-w-0">
-      <span class="font-bold uppercase text-sm">
-        Trend Mensile
-        <span class="text-primary font-normal">
-          - {{ filteredAssets().length }} asset filtrati
+      <div class="md:flex flex-row justify-between space-y-2">
+        <span class="font-bold uppercase text-sm">
+          Trend Mensile
+          <span class="text-primary font-normal">
+            - {{ filteredAssets().length }} asset filtrati
+          </span>
         </span>
-      </span>
+        <div class="space-x-0.5">
+          <button
+            pButton
+            type="button"
+            class="small"
+            [class.ce-button]="sizeTrendChart() === -6"
+            [class.ce-button-outlined]="sizeTrendChart() !== -6"
+            (click)="sizeTrendChart.set(-6)"
+          >
+            6m
+          </button>
+          <button
+            pButton
+            type="button"
+            class="small"
+            [class.ce-button]="sizeTrendChart() === -12"
+            [class.ce-button-outlined]="sizeTrendChart() !== -12"
+            (click)="sizeTrendChart.set(-12)"
+          >
+            1y
+          </button>
+          <button
+            pButton
+            type="button"
+            class="small"
+            [class.ce-button]="sizeTrendChart() === -24"
+            [class.ce-button-outlined]="sizeTrendChart() !== -24"
+            (click)="sizeTrendChart.set(-24)"
+          >
+            2y
+          </button>
+        </div>
+      </div>
       <div class="flex-1 relative overflow-hidden">
         <!-- Mostra il trend pronto -->
         @if (!isGlobalLoading()) {
           <app-trend-chart
             class="block h-full w-full"
             [monthlyNetWort]="filteredAssetsMonthlyNetWorth()"
+            [size]="sizeTrendChart()"
           />
         } @else {
           <div>Loading...</div>

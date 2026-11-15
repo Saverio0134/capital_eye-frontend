@@ -694,4 +694,17 @@ describe('Assets', () => {
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.querySelector('app-periodic-performance')).toBeTruthy();
   });
+
+  it('should default sizeTrendChart to -6 and allow updating time window', () => {
+    fixture.detectChanges();
+    expect(component.sizeTrendChart()).toBe(-6);
+
+    component.sizeTrendChart.set(-12);
+    fixture.detectChanges();
+    expect(component.sizeTrendChart()).toBe(-12);
+
+    component.sizeTrendChart.set(-24);
+    fixture.detectChanges();
+    expect(component.sizeTrendChart()).toBe(-24);
+  });
 });

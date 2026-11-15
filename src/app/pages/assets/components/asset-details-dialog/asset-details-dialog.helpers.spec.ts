@@ -69,4 +69,44 @@ describe('buildAssetDetailCards', () => {
     expect(totalBuyPriceCard?.kind).toBe('currency');
     expect(totalBuyPriceCard?.value).toBe(180);
   });
+
+  it('should include both gross gain and net gain cards', () => {
+    const asset = createAssetFixture({
+      totalValue: 200,
+      unrealizedGain: 20,
+      netValue: 194.8,
+    });
+    const cards = buildAssetDetailCards(asset, 11.11);
+
+    const grossGainCard = cards.find((card) => card.id === 'gross-gain');
+    expect(grossGainCard).toBeDefined();
+    expect(grossGainCard?.label).toBe('Guadagno Lordo');
+    expect(grossGainCard?.kind).toBe('currency');
+    expect(grossGainCard?.value).toBe(20);
+    expect(grossGainCard?.tone).toBe('positive');
+
+    const netGainCard = cards.find((card) => card.id === 'net-gain');
+    expect(netGainCard).toBeDefined();
+    expect(netGainCard?.label).toBe('Guadagno Netto');
+    expect(netGainCard?.kind).toBe('currency');
+    expect(netGainCard?.value).toBe(14.8);
+    expect(netGainCard?.tone).toBe('positive');
+  });
+
+  it('should handle negative tones for both gross gain and net gain when asset is in loss', () => {
+    const asset = createAssetFixture({
+      totalValue: 100,
+      unrealizedGain: -50,
+      netValue: 100,
+    });
+    const cards = buildAssetDetailCards(asset, -33.33);
+
+    const grossGainCard = cards.find((card) => card.id === 'gross-gain');
+    expect(grossGainCard?.value).toBe(-50);
+    expect(grossGainCard?.tone).toBe('negative');
+
+    const netGainCard = cards.find((card) => card.id === 'net-gain');
+    expect(netGainCard?.value).toBe(-50);
+    expect(netGainCard?.tone).toBe('negative');
+  });
 });

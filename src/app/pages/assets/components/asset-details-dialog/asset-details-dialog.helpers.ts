@@ -41,7 +41,16 @@ export function buildAssetDetailCards(asset: Asset, performancePercent: number):
 
 // Restituisce il blocco comune a tutti i tipi con i principali KPI economici.
 function buildCommonDetailCards(asset: Asset, performancePercent: number): AssetDetailCard[] {
-  const totalCostBasis = Math.max(0, Number((asset.totalValue - asset.unrealizedGain).toFixed(2)));
+  const grossGain =
+    typeof asset.unrealizedGain === 'number' && Number.isFinite(asset.unrealizedGain)
+      ? asset.unrealizedGain
+      : 0;
+  const totalCostBasis = Math.max(0, Number((asset.totalValue - grossGain).toFixed(2)));
+  const netValue =
+    typeof asset.netValue === 'number' && Number.isFinite(asset.netValue)
+      ? asset.netValue
+      : asset.totalValue;
+  const netGain = Number((netValue - totalCostBasis).toFixed(2));
 
   return [
     {
@@ -55,7 +64,7 @@ function buildCommonDetailCards(asset: Asset, performancePercent: number): Asset
       id: 'net-value',
       label: 'Valore Netto',
       kind: 'currency',
-      value: asset.netValue,
+      value: netValue,
       digits: '1.2-2',
     },
     {
@@ -66,19 +75,20 @@ function buildCommonDetailCards(asset: Asset, performancePercent: number): Asset
       digits: '1.2-2',
     },
     {
-      id: 'quantity',
-      label: resolveQuantityLabel(asset.type),
-      kind: 'number',
-      value: asset.quantity,
-      digits: resolveQuantityDigits(asset.type),
+      id: 'gross-gain',
+      label: 'Guadagno Lordo',
+      kind: 'currency',
+      value: grossGain,
+      digits: '1.2-2',
+      tone: resolveNumericTone(grossGain),
     },
     {
-      id: 'gain',
-      label: 'Guadagno',
+      id: 'net-gain',
+      label: 'Guadagno Netto',
       kind: 'currency',
-      value: asset.unrealizedGain,
+      value: netGain,
       digits: '1.2-2',
-      tone: resolveNumericTone(asset.unrealizedGain),
+      tone: resolveNumericTone(netGain),
     },
     {
       id: 'performance',
@@ -87,6 +97,13 @@ function buildCommonDetailCards(asset: Asset, performancePercent: number): Asset
       value: performancePercent,
       digits: '1.2-2',
       tone: resolveNumericTone(performancePercent),
+    },
+    {
+      id: 'quantity',
+      label: resolveQuantityLabel(asset.type),
+      kind: 'number',
+      value: asset.quantity,
+      digits: resolveQuantityDigits(asset.type),
     },
   ];
 }

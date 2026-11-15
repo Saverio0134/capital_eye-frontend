@@ -75,6 +75,7 @@ export default class AssetsPage implements OnInit, OnDestroy {
   private intervalId?: ReturnType<typeof setInterval>;
 
   readonly viewNetValue = signal(true);
+  readonly sizeTrendChart = signal(-6);
 
   // Inizializza gli effect.
   constructor() {
