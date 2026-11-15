@@ -41,6 +41,8 @@ export function buildAssetDetailCards(asset: Asset, performancePercent: number):
 
 // Restituisce il blocco comune a tutti i tipi con i principali KPI economici.
 function buildCommonDetailCards(asset: Asset, performancePercent: number): AssetDetailCard[] {
+  const totalCostBasis = Math.max(0, Number((asset.totalValue - asset.unrealizedGain).toFixed(2)));
+
   return [
     {
       id: 'gross-value',
@@ -54,6 +56,13 @@ function buildCommonDetailCards(asset: Asset, performancePercent: number): Asset
       label: 'Valore Netto',
       kind: 'currency',
       value: asset.netValue,
+      digits: '1.2-2',
+    },
+    {
+      id: 'total-buy-price',
+      label: 'Prezzo Totale Acquisto',
+      kind: 'currency',
+      value: totalCostBasis,
       digits: '1.2-2',
     },
     {

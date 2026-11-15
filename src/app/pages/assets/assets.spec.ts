@@ -494,4 +494,191 @@ describe('Assets', () => {
 
     expect(component.growthAssets()).toBeCloseTo(10, 5);
   });
+
+  it('should default viewNetValue to true (net value view)', () => {
+    expect(component.viewNetValue()).toBeTrue();
+  });
+
+  it('should switch totalAssetsValue between net and gross values', () => {
+    const assetStore = TestBed.inject(AssetStore) as unknown as {
+      intangibleAssets: ReturnType<
+        typeof signal<{
+          assets: Asset[];
+          netTotal: number;
+          growth: { oneMonth: number; threeMonths: number; sixMonths: number; year: number };
+          lastUpdate: Date;
+        }>
+      >;
+      physicalAssets: ReturnType<
+        typeof signal<{
+          assets: Asset[];
+          netTotal: number;
+          growth: { oneMonth: number; threeMonths: number; sixMonths: number; year: number };
+          lastUpdate: Date;
+        }>
+      >;
+    };
+
+    assetStore.intangibleAssets.set({
+      assets: [
+        createAssetFixture({
+          uuid: 'asset-1',
+          name: 'Stock A',
+          totalValue: 120,
+          netValue: 100,
+        }),
+      ],
+      netTotal: 100,
+      growth: { oneMonth: 0, threeMonths: 0, sixMonths: 0, year: 0 },
+      lastUpdate: new Date(),
+    });
+    assetStore.physicalAssets.set({
+      assets: [
+        createAssetFixture({
+          uuid: 'asset-2',
+          name: 'Gold',
+          type: AssetType.PRECIOUS_METAL,
+          totalValue: 80,
+          netValue: 70,
+        }),
+      ],
+      netTotal: 70,
+      growth: { oneMonth: 0, threeMonths: 0, sixMonths: 0, year: 0 },
+      lastUpdate: new Date(),
+    });
+
+    fixture.detectChanges();
+
+    // Default: netto
+    expect(component.viewNetValue()).toBeTrue();
+    expect(component.totalAssetsValue()).toBe(170);
+
+    // Switch a lordo
+    component.viewNetValue.set(false);
+    fixture.detectChanges();
+
+    expect(component.viewNetValue()).toBeFalse();
+    expect(component.totalAssetsValue()).toBe(200);
+
+    // Switch di nuovo a netto
+    component.viewNetValue.set(true);
+    fixture.detectChanges();
+
+    expect(component.totalAssetsValue()).toBe(170);
+  });
+
+  it('should switch table header and cell values when toggling netto and lordo', () => {
+    const assetStore = TestBed.inject(AssetStore) as unknown as {
+      intangibleAssets: ReturnType<
+        typeof signal<{
+          assets: Asset[];
+          netTotal: number;
+          growth: { oneMonth: number; threeMonths: number; sixMonths: number; year: number };
+          lastUpdate: Date;
+        }>
+      >;
+      physicalAssets: ReturnType<
+        typeof signal<{
+          assets: Asset[];
+          netTotal: number;
+          growth: { oneMonth: number; threeMonths: number; sixMonths: number; year: number };
+          lastUpdate: Date;
+        }>
+      >;
+    };
+
+    assetStore.intangibleAssets.set({
+      assets: [
+        createAssetFixture({
+          uuid: 'asset-table',
+          name: 'Apple',
+          totalValue: 500,
+          netValue: 420,
+        }),
+      ],
+      netTotal: 420,
+      growth: { oneMonth: 0, threeMonths: 0, sixMonths: 0, year: 0 },
+      lastUpdate: new Date(),
+    });
+    assetStore.physicalAssets.set({
+      assets: [],
+      netTotal: 0,
+      growth: { oneMonth: 0, threeMonths: 0, sixMonths: 0, year: 0 },
+      lastUpdate: new Date(),
+    });
+
+    fixture.detectChanges();
+
+    // Netto
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.textContent).toContain('Valore Netto');
+    expect(compiled.textContent).not.toContain('Valore Lordo');
+    expect(compiled.textContent).toMatch(/420/);
+
+    // Lordo
+    component.viewNetValue.set(false);
+    fixture.detectChanges();
+
+    expect(compiled.textContent).toContain('Valore Lordo');
+    expect(compiled.textContent).not.toContain('Valore Netto');
+    expect(compiled.textContent).toMatch(/500/);
+  });
+
+  it('should update distribution chart values based on viewNetValue', () => {
+    const assetStore = TestBed.inject(AssetStore) as unknown as {
+      intangibleAssets: ReturnType<
+        typeof signal<{
+          assets: Asset[];
+          netTotal: number;
+          growth: { oneMonth: number; threeMonths: number; sixMonths: number; year: number };
+          lastUpdate: Date;
+        }>
+      >;
+      physicalAssets: ReturnType<
+        typeof signal<{
+          assets: Asset[];
+          netTotal: number;
+          growth: { oneMonth: number; threeMonths: number; sixMonths: number; year: number };
+          lastUpdate: Date;
+        }>
+      >;
+    };
+
+    assetStore.intangibleAssets.set({
+      assets: [
+        createAssetFixture({
+          uuid: 'asset-pie-1',
+          name: 'Asset 1',
+          totalValue: 300,
+          netValue: 200,
+        }),
+        createAssetFixture({
+          uuid: 'asset-pie-2',
+          name: 'Asset 2',
+          totalValue: 100,
+          netValue: 90,
+        }),
+      ],
+      netTotal: 290,
+      growth: { oneMonth: 0, threeMonths: 0, sixMonths: 0, year: 0 },
+      lastUpdate: new Date(),
+    });
+    assetStore.physicalAssets.set({
+      assets: [],
+      netTotal: 0,
+      growth: { oneMonth: 0, threeMonths: 0, sixMonths: 0, year: 0 },
+      lastUpdate: new Date(),
+    });
+
+    fixture.detectChanges();
+
+    // Netto
+    expect(component.assetChartValues()).toEqual([200, 90]);
+
+    // Lordo
+    component.viewNetValue.set(false);
+    fixture.detectChanges();
+
+    expect(component.assetChartValues()).toEqual([300, 100]);
+  });
 });

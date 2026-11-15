@@ -70,6 +70,8 @@ export default class AssetsPage implements OnInit, OnDestroy {
   readonly randomNumber = signal(0);
   private intervalId?: ReturnType<typeof setInterval>;
 
+  readonly viewNetValue = signal(true);
+
   // Inizializza gli effect.
   constructor() {
     // Ferma l'animazione quando arrivano i dati reali.
@@ -183,9 +185,12 @@ export default class AssetsPage implements OnInit, OnDestroy {
   // Valore totale mostrato nell'header.
   totalAssetsValue = computed(() => {
     if (this.isGlobalLoading()) return this.randomNumber();
-    const intangibleHeight = this.assetStore.intangibleAssets()?.netTotal ?? 0;
-    const physicalHeight = this.assetStore.physicalAssets()?.netTotal ?? 0;
-    return intangibleHeight + physicalHeight;
+    if (this.viewNetValue()) {
+      const intangibleNet = this.assetStore.intangibleAssets()?.netTotal ?? 0;
+      const physicalNet = this.assetStore.physicalAssets()?.netTotal ?? 0;
+      return intangibleNet + physicalNet;
+    }
+    return this.allAssets().reduce((total, asset) => total + asset.totalValue, 0);
   });
 
   // Totali mensili aggregati su tutti gli asset mostrati nel box totale.
@@ -222,13 +227,20 @@ export default class AssetsPage implements OnInit, OnDestroy {
 
   // Top asset più bucket "altri" per la torta.
   assetDistribution = computed<ChartSlice[]>(() => {
-    const rankedAssets = [...this.filteredAssets()].sort((a, b) => b.totalValue - a.totalValue);
+    const isNet = this.viewNetValue();
+    const getAssetValue = (asset: AssetTableRow) => (isNet ? asset.netValue : asset.totalValue);
+
+    const rankedAssets = [...this.filteredAssets()].sort(
+      (a, b) => getAssetValue(b) - getAssetValue(a),
+    );
     const topAssets = rankedAssets.slice(0, 5).map((asset) => ({
       label: asset.name,
-      value: asset.totalValue,
+      value: getAssetValue(asset),
     }));
 
-    const othersValue = rankedAssets.slice(5).reduce((sum, asset) => sum + asset.totalValue, 0);
+    const othersValue = rankedAssets
+      .slice(5)
+      .reduce((sum, asset) => sum + getAssetValue(asset), 0);
 
     if (othersValue > 0) {
       topAssets.push({

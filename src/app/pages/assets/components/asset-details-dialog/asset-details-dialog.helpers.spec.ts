@@ -55,4 +55,18 @@ describe('buildAssetDetailCards', () => {
     expect(cards.some((card) => card.id === 'total-weight')).toBeTrue();
     expect(cards.some((card) => card.id === 'ticker')).toBeFalse();
   });
+
+  it('should include total buy price card calculated from totalValue and unrealizedGain', () => {
+    const asset = createAssetFixture({
+      totalValue: 200,
+      unrealizedGain: 20,
+    });
+    const cards = buildAssetDetailCards(asset, 11.11);
+    const totalBuyPriceCard = cards.find((card) => card.id === 'total-buy-price');
+
+    expect(totalBuyPriceCard).toBeDefined();
+    expect(totalBuyPriceCard?.label).toBe('Prezzo Totale Acquisto');
+    expect(totalBuyPriceCard?.kind).toBe('currency');
+    expect(totalBuyPriceCard?.value).toBe(180);
+  });
 });
