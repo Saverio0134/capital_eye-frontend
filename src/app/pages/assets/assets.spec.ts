@@ -4,6 +4,7 @@ import { of } from 'rxjs';
 import { AssetApi } from '../../services/api/asset-api/asset-api';
 import { AssetStore } from '../../services/store/asset-store/asset-store';
 import { FinancialAccountStore } from '../../services/store/financial-account-store/financial-account-store';
+import { TransactionStore } from '../../services/store/transaction-store/transaction-store';
 import {
   Asset,
   AssetType,
@@ -137,6 +138,12 @@ describe('Assets', () => {
                 currency: Currency.EUR,
               },
             ]),
+          },
+        },
+        {
+          provide: TransactionStore,
+          useValue: {
+            assetTransactions: signal([]),
           },
         },
       ],
@@ -680,5 +687,11 @@ describe('Assets', () => {
     fixture.detectChanges();
 
     expect(component.assetChartValues()).toEqual([300, 100]);
+  });
+
+  it('should render periodic performance section with filteredAssetsMonthlyNetWorth', () => {
+    fixture.detectChanges();
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.querySelector('app-periodic-performance')).toBeTruthy();
   });
 });

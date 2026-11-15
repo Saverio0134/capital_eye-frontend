@@ -267,4 +267,14 @@
       </div>
     </div>
   </div>
+
+  <!-- RENDIMENTO PERIODICO -->
+  @if (!isGlobalLoading()) {
+    <app-periodic-performance
+      [data]="filteredAssetsMonthlyNetWorth()"
+      [transactions]="filteredTransactions()"
+      [currency]="portfolioValuationCurrency()"
+      title="Rendimento Periodico Asset Filtrati"
+    />
+  }
 </div>

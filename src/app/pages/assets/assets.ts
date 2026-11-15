@@ -6,7 +6,9 @@ import { ButtonModule } from 'primeng/button';
 import { SelectModule } from 'primeng/select';
 import { TableModule } from 'primeng/table';
 import { AssetStore } from '../../services/store/asset-store/asset-store';
+import { TransactionStore } from '../../services/store/transaction-store/transaction-store';
 import { DistributionChart } from '../../shared/components/distribution-chart/distribution-chart';
+import { PeriodicPerformance } from '../../shared/components/periodic-performance/periodic-performance';
 import { TrendChart } from '../../shared/components/trend-chart/trend-chart';
 import { Asset, AssetType, Currency, MonthlyAssetVariationPoint } from '../../models/asset.model';
 import { MonthlyNetWorth } from '../../models/networth.model';
@@ -45,6 +47,7 @@ interface ChartSlice {
     LucideAngularModule,
     DistributionChart,
     TrendChart,
+    PeriodicPerformance,
     AssetDetailsDialog,
     AssetAccountsDialog,
     SaveAsset,
@@ -57,6 +60,7 @@ export default class AssetsPage implements OnInit, OnDestroy {
   readonly PlusIcon = PlusIcon;
   readonly FunnelXIcon = FunnelXIcon;
   readonly assetStore = inject(AssetStore);
+  readonly transactionStore = inject(TransactionStore);
 
   // Stato di caricamento globale della pagina.
   isGlobalLoading = computed(() => {
@@ -259,6 +263,15 @@ export default class AssetsPage implements OnInit, OnDestroy {
   // Totali mensili aggregati sugli asset filtrati.
   filteredAssetsMonthlyNetWorth = computed<MonthlyNetWorth[]>(() => {
     return this.buildMonthlyNetWorth(this.filteredAssets());
+  });
+
+  // Transazioni relative agli asset attualmente filtrati
+  readonly filteredTransactions = computed(() => {
+    const assets = this.filteredAssets();
+    const assetUuids = new Set(assets.map((a) => a.uuid));
+    return this.transactionStore
+      .assetTransactions()
+      .filter((t) => assetUuids.has(t.assetUuid));
   });
 
   // Calcola la performance stimata.

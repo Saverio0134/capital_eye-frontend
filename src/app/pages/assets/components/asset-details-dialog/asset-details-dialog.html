@@ -75,6 +75,14 @@
         }
       </div>
 
+      <!-- Rendimento Periodico dell'Asset -->
+      <app-periodic-performance
+        [data]="assetMonthlyPoints()"
+        [transactions]="assetTransactions()"
+        [currency]="selectedAsset.valuationCurrency"
+        title="Rendimento Periodico Asset"
+      />
+
       <!-- Spiega quando l'asset non e eliminabile -->
       @if (!canDeleteAsset()) {
         <div class="mt-4 text-xs text-primary">

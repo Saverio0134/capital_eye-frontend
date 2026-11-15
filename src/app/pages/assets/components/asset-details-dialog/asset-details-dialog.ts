@@ -6,12 +6,14 @@ import { firstValueFrom } from 'rxjs';
 import { Asset, AssetType } from '../../../../models/asset.model';
 import { AssetApi } from '../../../../services/api/asset-api/asset-api';
 import { AssetStore } from '../../../../services/store/asset-store/asset-store';
+import { TransactionStore } from '../../../../services/store/transaction-store/transaction-store';
 import { ASSET_TYPE_LABELS } from '../../../../shared/config/select-options.config';
+import { PeriodicPerformance } from '../../../../shared/components/periodic-performance/periodic-performance';
 import { AssetDetailCard, buildAssetDetailCards } from './asset-details-dialog.helpers';
 
 @Component({
   selector: 'app-asset-details-dialog',
-  imports: [ButtonModule, CurrencyPipe, DatePipe, DecimalPipe, DialogModule],
+  imports: [ButtonModule, CurrencyPipe, DatePipe, DecimalPipe, DialogModule, PeriodicPerformance],
   templateUrl: './asset-details-dialog.html',
 })
 export class AssetDetailsDialog {
@@ -23,6 +25,7 @@ export class AssetDetailsDialog {
 
   private readonly assetApi = inject(AssetApi);
   private readonly assetStore = inject(AssetStore);
+  private readonly transactionStore = inject(TransactionStore);
 
   readonly isDeletingAsset = signal(false);
   readonly currentAsset = computed(() => {
@@ -56,6 +59,37 @@ export class AssetDetailsDialog {
     }
 
     return buildAssetDetailCards(asset, this.getAssetPerformance(asset));
+  });
+  readonly assetMonthlyPoints = computed<Array<{ date: Date | string; value: number }>>(() => {
+    const asset = this.currentAsset();
+
+    if (!asset) {
+      return [];
+    }
+
+    const variation = this.assetStore
+      .monthlyVariations()
+      .find((v) => v.assetUuid === asset.uuid);
+
+    if (!variation) {
+      return [];
+    }
+
+    return variation.monthlyVariations.map((p) => ({
+      date: p.date,
+      value: p.value,
+    }));
+  });
+  readonly assetTransactions = computed(() => {
+    const asset = this.currentAsset();
+
+    if (!asset) {
+      return [];
+    }
+
+    return this.transactionStore
+      .assetTransactions()
+      .filter((t) => t.assetUuid === asset.uuid);
   });
 
   // Chiude il dialog dettagli quando non ci sono operazioni distruttive in corso.

@@ -4,6 +4,7 @@ import { Observable, of } from 'rxjs';
 import { Asset, AssetType, Currency } from '../../../../models/asset.model';
 import { AssetApi } from '../../../../services/api/asset-api/asset-api';
 import { AssetStore } from '../../../../services/store/asset-store/asset-store';
+import { TransactionStore } from '../../../../services/store/transaction-store/transaction-store';
 import { AssetDetailsDialog } from './asset-details-dialog';
 
 // Crea un asset completo compatibile con il dialog dettagli.
@@ -72,6 +73,13 @@ describe('AssetDetailsDialog', () => {
             restoreOptimisticDeletedAsset: restoreOptimisticDeletedAssetSpy,
             intangibleAssets,
             physicalAssets: signal(createAssetSummary([])),
+            monthlyVariations: signal([]),
+          },
+        },
+        {
+          provide: TransactionStore,
+          useValue: {
+            assetTransactions: signal([]),
           },
         },
       ],

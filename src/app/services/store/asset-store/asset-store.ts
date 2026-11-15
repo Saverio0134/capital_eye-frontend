@@ -47,7 +47,7 @@ const EMPTY_ASSET_GROUPS: AllAssetsWithNet = {
 export class AssetStore {
   private api = inject(AssetApi);
   private authStore = inject(AuthStore);
-  private readonly monthlyVariationsLimit = 12;
+  private readonly monthlyVariationsLimit = 36;
   private readonly optimisticAssets = createOptimisticCollectionState<Asset, string>(
     (asset) => asset.uuid,
   );

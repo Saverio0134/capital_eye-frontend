@@ -1,0 +1,141 @@
+<div class="ce-container-outlined flex flex-col gap-3">
+  <!-- Header con Titolo e Controlli -->
+  <div class="flex flex-wrap items-center justify-between gap-2 border-b border-primary/20 pb-2">
+    <div class="flex items-center gap-2">
+      <span class="font-bold uppercase text-sm">{{ title() }}</span>
+      <span class="text-xs text-primary font-normal">
+        ({{ items().length }} {{ items().length === 1 ? 'periodo' : 'periodi' }})
+      </span>
+    </div>
+
+    <div class="flex flex-wrap items-center gap-2">
+      <!-- Selettore Periodo (1M, 3M, 6M, 1A) -->
+      <div class="flex items-center space-x-1">
+        <button
+          pButton
+          type="button"
+          class="small"
+          [class.ce-button]="selectedPeriod() === 1"
+          [class.ce-button-outlined]="selectedPeriod() !== 1"
+          (click)="selectedPeriod.set(1)"
+        >
+          1M
+        </button>
+        <button
+          pButton
+          type="button"
+          class="small"
+          [class.ce-button]="selectedPeriod() === 3"
+          [class.ce-button-outlined]="selectedPeriod() !== 3"
+          (click)="selectedPeriod.set(3)"
+        >
+          3M
+        </button>
+        <button
+          pButton
+          type="button"
+          class="small"
+          [class.ce-button]="selectedPeriod() === 6"
+          [class.ce-button-outlined]="selectedPeriod() !== 6"
+          (click)="selectedPeriod.set(6)"
+        >
+          6M
+        </button>
+        <button
+          pButton
+          type="button"
+          class="small"
+          [class.ce-button]="selectedPeriod() === 12"
+          [class.ce-button-outlined]="selectedPeriod() !== 12"
+          (click)="selectedPeriod.set(12)"
+        >
+          1A
+        </button>
+      </div>
+
+      <!-- Selettore Metrica (€ vs %) -->
+      <div class="flex items-center space-x-1 pl-2 border-l border-primary/20">
+        <button
+          pButton
+          type="button"
+          class="small"
+          [class.ce-button]="selectedMetric() === 'currency'"
+          [class.ce-button-outlined]="selectedMetric() !== 'currency'"
+          (click)="selectedMetric.set('currency')"
+        >
+          {{ currency() }}
+        </button>
+        <button
+          pButton
+          type="button"
+          class="small"
+          [class.ce-button]="selectedMetric() === 'percent'"
+          [class.ce-button-outlined]="selectedMetric() !== 'percent'"
+          (click)="selectedMetric.set('percent')"
+        >
+          %
+        </button>
+      </div>
+    </div>
+  </div>
+
+  @if (items().length > 0) {
+    <!-- Grafico a Barre dei Periodi -->
+    <div class="h-44 w-full relative">
+      <p-chart
+        type="bar"
+        [data]="chartData()"
+        [options]="chartOptions()"
+        class="block h-full w-full"
+      />
+    </div>
+
+    <!-- Lista / Griglia dei Periodi -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 pt-1 max-h-60 overflow-y-auto">
+      @for (item of items(); track item.id) {
+        <div class="border border-primary/20 p-2.5 flex flex-col justify-between gap-1 text-xs">
+          <div class="flex justify-between items-start">
+            <div>
+              <span class="font-bold uppercase">{{ item.label }}</span>
+              <span class="text-primary text-[10px] block">{{ item.subLabel }}</span>
+            </div>
+            <span
+              class="px-1.5 py-0.5 text-[11px] font-bold"
+              [class.ce-container-positive]="item.isPositive"
+              [class.ce-container-negative]="item.isNegative"
+              [class.bg-primary]="!item.isPositive && !item.isNegative"
+              [class.text-on-primary]="!item.isPositive && !item.isNegative"
+            >
+              {{ item.deltaPercent > 0 ? '+' : '' }}{{ item.deltaPercent | number: '1.2-2' }}%
+            </span>
+          </div>
+
+          <!-- Dettaglio versamenti/prelievi se presenti -->
+          @if (item.netInflows !== 0) {
+            <div class="flex justify-between items-center text-[10px] text-primary/80 pt-1">
+              <span>Versamenti netti:</span>
+              <span class="tabular-nums font-semibold">
+                {{ item.netInflows > 0 ? '+' : '' }}{{ item.netInflows | currency: currency() : 'symbol' : '1.2-2' }}
+              </span>
+            </div>
+          }
+
+          <div class="flex justify-between items-end pt-1 border-t border-primary/10">
+            <span class="text-[10px] text-primary">Interesse reale:</span>
+            <span
+              class="font-bold tabular-nums text-xs"
+              [class.text-green-900]="item.isPositive"
+              [class.text-red-900]="item.isNegative"
+            >
+              {{ item.deltaValue > 0 ? '+' : '' }}{{ item.deltaValue | currency: currency() : 'symbol' : '1.2-2' }}
+            </span>
+          </div>
+        </div>
+      }
+    </div>
+  } @else {
+    <div class="p-4 text-center text-xs text-primary">
+      Dati storici insufficienti per calcolare il rendimento periodico (richiesti almeno 2 mesi di storico).
+    </div>
+  }
+</div>
